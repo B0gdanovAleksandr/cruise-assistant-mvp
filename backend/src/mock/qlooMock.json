@@ -1,0 +1,59 @@
+{
+  "recommendations": [
+    {
+      "id": "rec_001",
+      "name": "Sunset Dinner Cruise",
+      "description": "Romantic dinner cruise with panoramic ocean views",
+      "categories": ["dining", "romance", "scenic"],
+      "rating": 4.8,
+      "price_range": "$$",
+      "location": "Mediterranean",
+      "duration": "3 hours",
+      "highlights": ["Gourmet cuisine", "Live music", "Sunset views"]
+    },
+    {
+      "id": "rec_002", 
+      "name": "Historical Port Walking Tour",
+      "description": "Guided tour through ancient port cities",
+      "categories": ["culture", "history", "walking"],
+      "rating": 4.6,
+      "price_range": "$",
+      "location": "Mediterranean",
+      "duration": "2 hours",
+      "highlights": ["Expert guide", "Historical sites", "Local stories"]
+    },
+    {
+      "id": "rec_003",
+      "name": "Snorkeling Adventure",
+      "description": "Explore underwater marine life in crystal clear waters",
+      "categories": ["adventure", "water sports", "nature"],
+      "rating": 4.7,
+      "price_range": "$$",
+      "location": "Caribbean",
+      "duration": "4 hours",
+      "highlights": ["Equipment included", "Marine life", "Professional guide"]
+    },
+    {
+      "id": "rec_004",
+      "name": "Local Market Food Tour",
+      "description": "Taste authentic local cuisine and specialties",
+      "categories": ["food", "culture", "local"],
+      "rating": 4.9,
+      "price_range": "$",
+      "location": "Various",
+      "duration": "2.5 hours",
+      "highlights": ["Local delicacies", "Market experience", "Cultural immersion"]
+    },
+    {
+      "id": "rec_005",
+      "name": "Spa & Wellness Package",
+      "description": "Relaxing spa treatments with ocean views",
+      "categories": ["wellness", "relaxation", "spa"],
+      "rating": 4.5,
+      "price_range": "$$$",
+      "location": "Onboard",
+      "duration": "Full day",
+      "highlights": ["Ocean view", "Premium treatments", "Relaxation"]
+    }
+  ]
+}

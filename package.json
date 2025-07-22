@@ -1,0 +1,37 @@
+{
+  "name": "cruise-assistant-mvp",
+  "version": "1.0.0",
+  "description": "Cruise Personal Assistant MVP - Monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "bash scripts/start_dev.sh",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test -- --watchAll=false",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "qa": "bash scripts/check_local.sh",
+    "clean": "rm -rf backend/node_modules frontend/node_modules backend/logs *.log",
+    "lint": "echo 'Linting not configured yet'",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start"
+  },
+  "keywords": [
+    "cruise",
+    "assistant",
+    "travel",
+    "recommendations",
+    "mvp",
+    "react",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
