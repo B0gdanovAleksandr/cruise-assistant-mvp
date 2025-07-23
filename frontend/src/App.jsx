@@ -7,10 +7,14 @@ function App() {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [lastPreferences, setLastPreferences] = useState(null);
+  const [showInterestSelector, setShowInterestSelector] = useState(true);
 
   const handleGetRecommendations = async (preferences) => {
     setLoading(true);
     setError(null);
+    setLastPreferences(preferences);
+    setShowInterestSelector(false);
     
     console.log('Sending request with preferences:', preferences);
     
@@ -46,6 +50,22 @@ function App() {
     }
   };
 
+  const handleChangeInterests = () => {
+    setShowInterestSelector(true);
+    setRecommendations([]);
+    setError(null);
+  };
+
+  const handleRetry = () => {
+    console.log('Retry clicked, lastPreferences:', lastPreferences);
+    if (lastPreferences) {
+      handleGetRecommendations(lastPreferences);
+    } else {
+      console.warn('No lastPreferences available for retry');
+      setError('No previous request to retry. Please select interests first.');
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -54,19 +74,28 @@ function App() {
       </header>
       
       <main className="App-main">
-        <InterestSelector 
-          onGetRecommendations={handleGetRecommendations}
-          loading={loading}
-        />
+        {showInterestSelector && (
+          <InterestSelector 
+            onGetRecommendations={handleGetRecommendations}
+            loading={loading}
+          />
+        )}
         
         {error && (
           <div className="error-message">
             <p>❌ {error}</p>
+            <button onClick={handleRetry} className="retry-btn" disabled={loading}>
+              {loading ? '🔄 Retrying...' : '🔄 Retry'}
+            </button>
           </div>
         )}
         
         {recommendations && recommendations.recommendations && recommendations.recommendations.length > 0 && (
-          <RecommendationsList recommendations={recommendations} />
+          <RecommendationsList 
+            recommendations={recommendations}
+            onChangeInterests={handleChangeInterests}
+            loading={loading}
+          />
         )}
       </main>
     </div>

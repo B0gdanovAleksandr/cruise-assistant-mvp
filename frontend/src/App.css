@@ -132,11 +132,86 @@
 }
 
 .ai-insights {
-  background: #f0f8ff;
-  padding: 20px;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 25px;
   margin-bottom: 30px;
+  text-align: left;
+}
+
+.ai-insights h3 {
+  color: #667eea;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.ai-summary,
+.ai-advice,
+.ai-budget,
+.ai-timing {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
   border-left: 4px solid #667eea;
+}
+
+.ai-summary h4,
+.ai-advice h4,
+.ai-budget h4,
+.ai-timing h4 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-summary p {
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ai-advice ul,
+.ai-budget ul,
+.ai-timing ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ai-advice li,
+.ai-budget li,
+.ai-timing li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  color: #555;
+  line-height: 1.5;
+}
+
+.ai-advice li:last-child,
+.ai-budget li:last-child,
+.ai-timing li:last-child {
+  border-bottom: none;
+}
+
+.ai-advice li::before {
+  content: "💡 ";
+  margin-right: 8px;
+}
+
+.ai-budget li::before {
+  content: "💰 ";
+  margin-right: 8px;
+}
+
+.ai-timing li::before {
+  content: "⏰ ";
+  margin-right: 8px;
 }
 
 .recommendations-grid {
@@ -222,4 +297,130 @@
   text-align: center;
   padding: 40px;
   color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  padding: 20px;
+}
+
+.change-interests-btn,
+.retry-btn {
+  padding: 12px 24px;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.change-interests-btn:hover,
+.retry-btn:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.change-interests-btn:active,
+.retry-btn:active {
+  transform: translateY(0);
+}
+
+.error-message .retry-btn {
+  margin-top: 15px;
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+  color: white;
+}
+
+.error-message .retry-btn:hover {
+  background: #ff5252;
+  border-color: #ff5252;
+}
+
+.generated-activities {
+  background: #f8f9ff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 30px;
+  border: 2px solid #e3e8ff;
+}
+
+.generated-activities h3 {
+  color: #667eea;
+  margin-bottom: 10px;
+  font-size: 1.4rem;
+}
+
+.activities-subtitle {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.activities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.activity-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #667eea;
+  transition: transform 0.2s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.activity-emoji {
+  font-size: 1.5rem;
+}
+
+.activity-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.activity-description {
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.fallback-indicator {
+  margin-top: 12px;
+}
+
+.fallback-badge {
+  background: #fff3cd;
+  color: #856404;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
