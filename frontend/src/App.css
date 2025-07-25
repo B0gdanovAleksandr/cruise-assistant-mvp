@@ -424,3 +424,18 @@
   font-size: 0.8rem;
   font-weight: 500;
 }
+
+.App-footer {
+  margin-top: 40px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-top: 2px solid #e9ecef;
+}
+
+.App-footer p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}

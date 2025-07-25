@@ -5,6 +5,88 @@ All notable changes to the Cruise Personal Assistant MVP will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2025-07-25
+
+### 🐳 Docker Ready Release
+
+#### Added
+- **Full Docker Containerization**
+  - Multi-stage Docker builds for both frontend and backend
+  - Docker Compose orchestration for easy deployment
+  - Nginx reverse proxy with API routing
+  - Health checks for both services
+  - Production-ready container configuration
+
+- **Frontend Docker Features**
+  - Nginx serving optimized React build
+  - Static file caching and gzip compression
+  - SPA routing support for React application
+  - Security headers and CORS configuration
+  - API proxy routing to backend
+
+- **Backend Docker Features**
+  - Multi-stage build with production optimization
+  - Non-root user for security
+  - Volume mounting for logs
+  - Health check endpoint integration
+  - Environment variable management
+
+- **Docker Infrastructure**
+  - Internal Docker network for service communication
+  - Volume management for persistent data
+  - Environment variable injection
+  - Container health monitoring
+  - Easy scaling and deployment
+
+#### Fixed
+- **HTTP 405 Error**: Resolved API routing issue in nginx configuration
+- **TypeScript Dependencies**: Added missing TypeScript and React Query dependencies
+- **Package Lock Sync**: Fixed package-lock.json synchronization issues
+- **Nginx Proxy**: Added proper API endpoint proxying to backend
+
+#### Technical Improvements
+- **Build Optimization**: Multi-stage builds reduce image sizes
+- **Security**: Non-root containers and security headers
+- **Performance**: Static file caching and compression
+- **Monitoring**: Health checks and logging integration
+- **Development**: Easy local development with Docker
+
+#### Docker Commands
+```bash
+# Quick start
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Rebuild
+docker-compose build --no-cache
+
+# Stop services
+docker-compose down
+```
+
+### 🧪 Testing Coverage
+- ✅ Docker container builds successfully
+- ✅ Services start and pass health checks
+- ✅ API endpoints accessible through nginx proxy
+- ✅ Frontend application loads correctly
+- ✅ All previous functionality maintained
+
+### 📦 Dependencies
+- **Docker**: Multi-stage builds with Node.js 18 and Nginx Alpine
+- **Frontend**: Added TypeScript 4.9.0, @tanstack/react-query 4.29.0
+- **Backend**: Production-optimized dependencies
+
+### 🚀 Deployment Ready
+- Complete Docker containerization
+- Production-ready nginx configuration
+- Health monitoring and logging
+- Easy deployment to any Docker environment
+- Scalable architecture for cloud deployment
+
+---
+
 ## [1.0.0] - 2025-07-22
 
 ### 🎉 Initial MVP Release

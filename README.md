@@ -2,17 +2,20 @@
 
 A personalized cruise travel assistant that provides tailored recommendations based on user interests, location preferences, and budget, enhanced with AI insights from ChatGPT.
 
-## 🎯 Project Status: MVP Complete with AI Integration ✅
+## 🎯 Project Status: Docker Ready with Full Containerization ✅
 
-**Current Version:** 1.0.0 - MVP with ChatGPT Integration  
-**Status:** Production Ready with AI Enhancement  
-**Last Updated:** July 23, 2025
+**Current Version:** 3.1.0 - Docker Ready  
+**Status:** Production Ready with Docker & AI Enhancement  
+**Last Updated:** July 25, 2025
 
 ### ✅ Completed Features
 - [x] Interactive interest selection UI
 - [x] Location and budget preference selection
 - [x] Qloo API integration for real recommendations
 - [x] **ChatGPT API integration for AI-enhanced insights**
+- [x] **Full Docker containerization with nginx proxy**
+- [x] **Multi-stage Docker builds for optimization**
+- [x] **Health checks and monitoring**
 - [x] Real-time recommendation filtering
 - [x] Responsive design with modern UI
 - [x] Comprehensive logging with Winston
@@ -21,7 +24,17 @@ A personalized cruise travel assistant that provides tailored recommendations ba
 - [x] CI/CD pipeline with GitHub Actions
 - [x] Automated QA testing scripts
 
-### 🤖 AI Features (New!)
+### 🐳 Docker Features (New in v3.1!)
+- [x] **Multi-stage Docker builds** for optimized production images
+- [x] **Nginx reverse proxy** with API routing
+- [x] **Health checks** for both frontend and backend
+- [x] **Docker Compose** for easy orchestration
+- [x] **Production-ready configuration** with security headers
+- [x] **Static file caching** and gzip compression
+- [x] **SPA routing support** for React application
+- [x] **Environment variable management** for Docker
+
+### 🤖 AI Features
 - [x] **AI-Enhanced Recommendations** - ChatGPT provides personalized insights
 - [x] **Smart Summaries** - AI-generated activity summaries
 - [x] **Personalized Advice** - Context-aware recommendations
@@ -31,12 +44,64 @@ A personalized cruise travel assistant that provides tailored recommendations ba
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Option 1: Docker (Recommended)
+
+#### Prerequisites
+- Docker 20.10+
+- Docker Compose 2.0+
+
+#### Quick Docker Setup
+
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd cruise-assistant-mvp
+```
+
+2. **Set up environment variables**
+```bash
+cp .env.example .env
+# Edit .env with your API keys:
+# QLOO_API_KEY=REPLACE_WITH_YOUR_QLOO_API_KEY
+# OPENAI_API_KEY=REPLACE_WITH_YOUR_OPENAI_API_KEY
+```
+
+3. **Build and start with Docker**
+```bash
+docker-compose up -d
+```
+
+The application will be available at:
+- **Frontend**: `http://localhost:3000`
+- **Backend API**: `http://localhost:3001`
+
+#### Docker Commands
+
+```bash
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Rebuild containers
+docker-compose build --no-cache
+
+# Check service status
+docker-compose ps
+```
+
+### Option 2: Local Development
+
+#### Prerequisites
 - Node.js 18+
 - npm 8+
 - Git
 
-### Installation
+#### Installation
 
 1. **Clone the repository**
 ```bash
@@ -53,8 +118,8 @@ npm run install:all
 ```bash
 cp .env.example .env
 # Edit .env with your API keys:
-# QLOO_API_KEY=your_qloo_api_key_here
-# OPENAI_API_KEY=your_openai_api_key_here
+# QLOO_API_KEY=REPLACE_WITH_YOUR_QLOO_API_KEY
+# OPENAI_API_KEY=REPLACE_WITH_YOUR_OPENAI_API_KEY
 ```
 
 4. **Start development servers**
@@ -81,17 +146,27 @@ cruise-assistant-mvp/
 │   │   │   └── logger.js      # Winston logging setup
 │   │   └── __tests__/         # Backend tests
 │   ├── logs/                  # Application logs
+│   ├── Dockerfile             # Multi-stage Docker build
 │   └── package.json
 ├── frontend/                   # React application
 │   ├── src/
-│   │   ├── App.jsx            # Main application component
+│   │   ├── App.tsx            # Main application component
 │   │   ├── components/
 │   │   │   ├── InterestSelector.jsx
 │   │   │   ├── RecommendationsList.jsx
 │   │   │   └── GeneratedActivitiesList.jsx
+│   │   ├── views/
+│   │   │   └── RecommendationsView.tsx
+│   │   ├── services/
+│   │   │   └── api.ts
+│   │   ├── types/
+│   │   │   └── api.ts
 │   │   ├── App.css            # Styling
 │   │   └── index.js           # React entry point
+│   ├── Dockerfile             # Multi-stage Docker build
+│   ├── nginx.conf             # Nginx configuration
 │   └── package.json
+├── docker-compose.yml         # Docker orchestration
 ├── scripts/
 │   ├── check_local.sh         # QA automation script
 │   └── start_dev.sh           # Development startup script
@@ -100,6 +175,21 @@ cruise-assistant-mvp/
 ├── .env.example               # Environment variables template
 └── README.md
 ```
+
+## 🐳 Docker Architecture
+
+### Container Structure
+- **Frontend Container**: React app served by Nginx
+- **Backend Container**: Node.js Express API
+- **Network**: Internal Docker network for service communication
+
+### Key Features
+- **Multi-stage builds** for optimized production images
+- **Nginx reverse proxy** with API routing and caching
+- **Health checks** for both services
+- **Volume mounting** for logs and configuration
+- **Environment variable** management
+- **Security headers** and CORS configuration
 
 ## 🔧 API Endpoints
 
@@ -321,8 +411,8 @@ After running `npm run qa`, perform these manual tests:
 ### Required for Production
 ```env
 # API Keys
-QLOO_API_KEY=your_qloo_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
+QLOO_API_KEY=REPLACE_WITH_YOUR_QLOO_API_KEY
+OPENAI_API_KEY=REPLACE_WITH_YOUR_OPENAI_API_KEY
 
 # Server Configuration
 PORT=3001
