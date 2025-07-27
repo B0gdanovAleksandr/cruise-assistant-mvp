@@ -1,6 +1,8 @@
 const axios = require('axios');
 const logger = require('../utils/logger');
 const mockData = require('../mock/qlooMock.json');
+const entityResolver = require('./entityResolver');
+const urnRegistry = require('./urnRegistry');
 
 // Retry configuration
 const RETRY_CONFIG = {
@@ -19,6 +21,9 @@ class QlooClient {
     this.useMock = !this.apiKey;
     this.locale = 'en';
     
+    // Initialize URN registry
+    this._initializeURNRegistry();
+    
     // Debug logging
     console.log('QlooClient initialized:', {
       hasApiKey: !!this.apiKey,
@@ -26,6 +31,19 @@ class QlooClient {
       baseURL: this.baseURL,
       useMock: this.useMock
     });
+  }
+  
+  /**
+   * Initialize URN registry
+   * @private
+   */
+  async _initializeURNRegistry() {
+    try {
+      await urnRegistry.initialize();
+      console.log('URN Registry initialized successfully');
+    } catch (error) {
+      console.warn('Failed to initialize URN Registry:', error.message);
+    }
   }
 
   /**
@@ -99,7 +117,7 @@ class QlooClient {
   }
   
   /**
-   * Search for entities based on interests
+   * Search for entities based on interests with enhanced resolution
    * @param {string[]} interests - Array of interest keywords
    * @returns {Promise<string[]>} - Array of unique entity IDs
    */
@@ -117,73 +135,625 @@ class QlooClient {
     }
     
     try {
-      const uniqueEntityIds = new Set();
-      
-      // Process each interest in parallel
-      const searchPromises = interests.map(async (interest) => {
-        try {
-          const encodedInterest = encodeURIComponent(interest);
-          const url = `${this.baseURL}/search?query=${encodedInterest}`;
-          
-          console.info(`Searching for entities with interest: "${interest}"`);
-          
-          const response = await this._executeWithRetry(
-            () => axios.get(url, {
-              headers: this._getAuthHeaders(),
-              timeout: 5000
-            }),
-            `search entities for "${interest}"`
-          );
-          
-          // Check if response has results array
-          if (response.data && response.data.results && Array.isArray(response.data.results)) {
-            const entities = response.data.results;
-            
-            if (entities.length > 0) {
-              entities.forEach(entity => {
-                // Check for entity_id or id field
-                const entityId = entity.entity_id || entity.id;
-                if (entityId) {
-                  uniqueEntityIds.add(entityId);
-                  console.info(`Found entity: ${entity.name} (${entityId})`);
-                }
-              });
-              
-              console.info(`Found ${entities.length} entities for "${interest}"`);
-            } else {
-              console.info(`No entities found for interest "${interest}"`);
-            }
-          } else {
-            console.warn(`Unexpected response format for "${interest}"`, {
-              hasResults: !!response.data?.results,
-              isResultsArray: Array.isArray(response.data?.results),
-              dataKeys: response.data ? Object.keys(response.data) : []
-            });
-          }
-        } catch (error) {
-          console.error(`Error searching for interest "${interest}"`, {
-            error: error.message,
-            status: error.response?.status
-          });
-        }
+      // Use EntityResolver for better entity resolution
+      const resolutionResult = await entityResolver.resolveEntities(interests, {
+        types: ['brand', 'place', 'tag', 'audience'],
+        confidenceThreshold: 0.4,
+        limit: 15
       });
       
-      // Wait for all searches to complete
-      await Promise.all(searchPromises);
+      if (resolutionResult.entities && resolutionResult.entities.length > 0) {
+        // Filter and validate entities
+        const validatedEntities = resolutionResult.entities
+          .filter(entity => {
+            const confidence = entity.confidence >= 0.4;
+            const urn = entity.urn || entity.entity_id || entity.id;
+            const isFallback = entity.source === 'fallback' || (urn && urn.includes('fallback'));
+            
+            // Skip fallback entities
+            if (isFallback) {
+              console.info(`Skipping fallback entity: ${urn}`);
+              return false;
+            }
+            
+            // For real entities, validate URN if present
+            const validURN = urn ? urnRegistry.validateURN(urn) : true;
+            
+            return confidence && validURN;
+          })
+          .map(entity => entity.urn || entity.entity_id || entity.id)
+          .filter(Boolean);
+        
+        console.info(`Resolved ${validatedEntities.length} entities with confidence >= 0.4 and valid URNs`, {
+          totalResolved: resolutionResult.entities.length,
+          filteredCount: validatedEntities.length,
+          confidence: resolutionResult.metadata.confidence,
+          urnValidated: true,
+          fallbackUsed: resolutionResult.metadata.fallback
+        });
+        
+        // If we have valid entities, return them
+        if (validatedEntities.length > 0) {
+          return validatedEntities;
+        }
+        
+        // If no valid entities but we have fallback, return empty array to trigger mock data
+        if (resolutionResult.metadata.fallback) {
+          console.info('No valid entities found, will use mock data');
+          return [];
+        }
+      }
       
-      const entityIds = Array.from(uniqueEntityIds);
-      console.info(`Found ${entityIds.length} unique entities from interests`);
+      // Fallback to legacy search if resolution fails
+      console.info('Entity resolution failed, falling back to legacy search');
+      return this._legacySearchEntities(interests);
       
-      return entityIds;
     } catch (error) {
-      console.error('Error in searchEntities', {
+      console.error('Error in enhanced entity search', {
         error: error.message,
         interests
       });
-      return [];
+      
+      // Fallback to legacy search
+      return this._legacySearchEntities(interests);
     }
   }
   
+  /**
+   * Legacy entity search method (fallback)
+   * @param {string[]} interests - Array of interest keywords
+   * @returns {Promise<string[]>} - Array of unique entity IDs
+   * @private
+   */
+  async _legacySearchEntities(interests) {
+    const uniqueEntityIds = new Set();
+    
+    // Process each interest in parallel
+    const searchPromises = interests.map(async (interest) => {
+      try {
+        const encodedInterest = encodeURIComponent(interest);
+        const url = `${this.baseURL}/search?query=${encodedInterest}`;
+        
+        console.info(`Searching for entities with interest: "${interest}"`);
+        
+        const response = await this._executeWithRetry(
+          () => axios.get(url, {
+            headers: this._getAuthHeaders(),
+            timeout: 5000
+          }),
+          `search entities for "${interest}"`
+        );
+        
+        // Check if response has results array
+        if (response.data && response.data.results && Array.isArray(response.data.results)) {
+          const entities = response.data.results;
+          
+          if (entities.length > 0) {
+            entities.forEach(entity => {
+              // Check for entity_id or id field
+              const entityId = entity.entity_id || entity.id;
+              if (entityId) {
+                uniqueEntityIds.add(entityId);
+                console.info(`Found entity: ${entity.name} (${entityId})`);
+              }
+            });
+            
+            console.info(`Found ${entities.length} entities for "${interest}"`);
+          } else {
+            console.info(`No entities found for interest "${interest}"`);
+          }
+        } else {
+          console.warn(`Unexpected response format for "${interest}"`, {
+            hasResults: !!response.data?.results,
+            isResultsArray: Array.isArray(response.data?.results),
+            dataKeys: response.data ? Object.keys(response.data) : []
+          });
+        }
+      } catch (error) {
+        console.error(`Error searching for interest "${interest}"`, {
+          error: error.message,
+          status: error.response?.status
+        });
+      }
+    });
+    
+    // Wait for all searches to complete
+    await Promise.all(searchPromises);
+    
+    const entityIds = Array.from(uniqueEntityIds);
+    console.info(`Found ${entityIds.length} unique entities from interests`);
+    
+    return entityIds;
+  }
+  
+    /**
+   * Get insights for entity IDs to build taste profile
+   * @param {string[]} entityIds - Array of entity IDs
+   * @returns {Promise<Object>} - Insights object with taste profile
+   */
+  async getInsights(entityIds) {
+    if (!this.apiKey) {
+      console.warn('QLOO_API_KEY not provided, using fallback insights');
+      return this._getMockInsights();
+    }
+
+    if (!entityIds || !Array.isArray(entityIds) || entityIds.length === 0) {
+      console.warn('No entity IDs provided for insights, using mock data');
+      return this._getMockInsights();
+    }
+
+    // Filter out fallback URNs
+    const validEntityIds = entityIds.filter(entityId => {
+      const isFallback = entityId.includes('fallback');
+      if (isFallback) {
+        console.info(`Skipping fallback entity: ${entityId}`);
+      }
+      return !isFallback;
+    });
+
+    if (validEntityIds.length === 0) {
+      console.warn('No valid entity IDs after filtering fallback URNs, using mock data');
+      return this._getMockInsights();
+    }
+
+    // If we have API key but want to test with mock data for development
+    if (process.env.USE_MOCK_INSIGHTS === 'true') {
+      console.info('Using mock insights for development/testing');
+      return this._getMockInsights();
+    }
+
+    console.info(`Getting insights for ${entityIds.length} entities`);
+
+    try {
+      const allInsights = [];
+      const processedEntities = new Set();
+
+          // Process up to 10 entities for insights (increased for better coverage)
+    const entitiesToProcess = validEntityIds.slice(0, 10);
+
+      for (const entityId of entitiesToProcess) {
+        if (processedEntities.has(entityId)) continue;
+        processedEntities.add(entityId);
+
+        try {
+          console.info(`Getting entity data for insights: ${entityId}`);
+
+          // Try insights endpoint first, then fallback to entities
+          let response;
+          try {
+            response = await this._executeWithRetry(
+              () => axios.get(`${this.baseURL}/insights`, {
+                params: {
+                  entity_ids: entityId,
+                  locale: 'en',
+                  types: ['brand', 'place', 'tag', 'audience']
+                },
+                headers: this._getAuthHeaders(),
+                timeout: 8000
+              }),
+              `get insights for ${entityId}`
+            );
+          } catch (insightsError) {
+            console.info(`Insights endpoint failed for ${entityId}, falling back to entities endpoint`);
+            response = await this._executeWithRetry(
+              () => axios.get(`${this.baseURL}/entities`, {
+                params: {
+                  entity_ids: entityId,
+                  locale: 'en'
+                },
+                headers: this._getAuthHeaders(),
+                timeout: 8000
+              }),
+              `get entity data for ${entityId}`
+            );
+          }
+
+          if (response.data && response.data.results && Array.isArray(response.data.results)) {
+            const entityData = response.data.results[0];
+            console.info(`Received entity data for ${entityId}:`, {
+              entityName: entityData.name,
+              hasProperties: !!entityData.properties,
+              propertiesKeys: entityData.properties ? Object.keys(entityData.properties) : [],
+              hasTypes: !!entityData.types,
+              types: entityData.types || []
+            });
+            
+            // Extract insights from entity properties and data
+            const extractedInsights = this._extractInsightsFromEntity(entityData);
+            
+            if (extractedInsights) {
+              const enhancedInsight = {
+                ...extractedInsights,
+                sourceEntityId: entityId,
+                sourceEntityName: entityData.name || entityId
+              };
+              
+              allInsights.push(enhancedInsight);
+              console.info(`Extracted insights for ${entityId}:`, {
+                preferenceCount: Object.keys(extractedInsights.preferences || {}).length,
+                interestCount: Object.keys(extractedInsights.interests || {}).length,
+                demographicCount: Object.keys(extractedInsights.demographics || {}).length
+              });
+            }
+          } else {
+            console.warn(`No entity data received for ${entityId}`);
+          }
+        } catch (error) {
+          console.warn(`Failed to get entity data for ${entityId}:`, error.message);
+          // Continue with other entities
+        }
+      }
+
+      console.info(`Total insights extracted: ${allInsights.length}`);
+
+      // Build taste profile from insights
+      const tasteProfile = this._buildTasteProfile(allInsights);
+
+      return {
+        insights: allInsights,
+        tasteProfile,
+        metadata: {
+          source: 'qloo',
+          entityCount: entityIds.length,
+          processedEntities: entitiesToProcess.length,
+          totalInsights: allInsights.length,
+          fallback: false,
+          timestamp: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      console.error('Error getting insights from Qloo API', {
+        error: error.message,
+        status: error.response?.status,
+        code: error.code
+      });
+
+      return this._getMockInsights();
+    }
+  }
+
+  /**
+   * Build taste profile from insights data
+   * @param {Array} insights - Array of insights from Qloo API
+   * @returns {Object} - Taste profile object
+   * @private
+   */
+  _buildTasteProfile(insights) {
+    const tasteProfile = {
+      preferences: {},
+      demographics: {},
+      interests: {},
+      behaviors: {},
+      affinities: {}
+    };
+
+    insights.forEach(insight => {
+      // Extract preference data
+      if (insight.preferences) {
+        Object.entries(insight.preferences).forEach(([key, value]) => {
+          if (!tasteProfile.preferences[key]) {
+            tasteProfile.preferences[key] = [];
+          }
+          tasteProfile.preferences[key].push(value);
+        });
+      }
+
+      // Extract demographic data
+      if (insight.demographics) {
+        Object.entries(insight.demographics).forEach(([key, value]) => {
+          if (!tasteProfile.demographics[key]) {
+            tasteProfile.demographics[key] = [];
+          }
+          tasteProfile.demographics[key].push(value);
+        });
+      }
+
+      // Extract interest data
+      if (insight.interests) {
+        Object.entries(insight.interests).forEach(([key, value]) => {
+          if (!tasteProfile.interests[key]) {
+            tasteProfile.interests[key] = [];
+          }
+          tasteProfile.interests[key].push(value);
+        });
+      }
+
+      // Extract behavior data
+      if (insight.behaviors) {
+        Object.entries(insight.behaviors).forEach(([key, value]) => {
+          if (!tasteProfile.behaviors[key]) {
+            tasteProfile.behaviors[key] = [];
+          }
+          tasteProfile.behaviors[key].push(value);
+        });
+      }
+
+      // Extract affinity data
+      if (insight.affinities) {
+        Object.entries(insight.affinities).forEach(([key, value]) => {
+          if (!tasteProfile.affinities[key]) {
+            tasteProfile.affinities[key] = [];
+          }
+          tasteProfile.affinities[key].push(value);
+        });
+      }
+    });
+
+    // Aggregate and rank the data
+    const aggregatedProfile = {
+      topPreferences: this._aggregateAndRank(tasteProfile.preferences),
+      topDemographics: this._aggregateAndRank(tasteProfile.demographics),
+      topInterests: this._aggregateAndRank(tasteProfile.interests),
+      topBehaviors: this._aggregateAndRank(tasteProfile.behaviors),
+      topAffinities: this._aggregateAndRank(tasteProfile.affinities)
+    };
+
+    console.info('Taste profile built successfully', {
+      preferenceCount: Object.keys(tasteProfile.preferences).length,
+      demographicCount: Object.keys(tasteProfile.demographics).length,
+      interestCount: Object.keys(tasteProfile.interests).length,
+      behaviorCount: Object.keys(tasteProfile.behaviors).length,
+      affinityCount: Object.keys(tasteProfile.affinities).length
+    });
+
+    return aggregatedProfile;
+  }
+
+  /**
+   * Aggregate and rank profile data
+   * @param {Object} data - Profile data object
+   * @returns {Array} - Ranked array of top items
+   * @private
+   */
+  _aggregateAndRank(data) {
+    const aggregated = {};
+
+    Object.entries(data).forEach(([key, values]) => {
+      // Count occurrences and calculate average score
+      const count = values.length;
+      const avgScore = values.reduce((sum, val) => sum + (val.score || 0.5), 0) / count;
+      
+      aggregated[key] = {
+        count,
+        avgScore,
+        totalScore: avgScore * count,
+        values: values.slice(0, 5) // Keep top 5 values
+      };
+    });
+
+    // Sort by total score (count * avgScore)
+    return Object.entries(aggregated)
+      .sort(([, a], [, b]) => b.totalScore - a.totalScore)
+      .slice(0, 10) // Return top 10
+      .map(([key, data]) => ({
+        key,
+        ...data
+      }));
+  }
+
+  /**
+   * Extract insights from entity data
+   * @param {Object} entityData - Entity data from Qloo API
+   * @returns {Object|null} - Extracted insights or null
+   * @private
+   */
+  _extractInsightsFromEntity(entityData) {
+    if (!entityData || !entityData.properties) {
+      return null;
+    }
+
+    const insights = {
+      preferences: {},
+      demographics: {},
+      interests: {},
+      behaviors: {},
+      affinities: {}
+    };
+
+    const properties = entityData.properties;
+    const types = entityData.types || [];
+    const popularity = entityData.popularity || 0.5;
+
+    // Extract preferences from properties
+    if (properties.description) {
+      insights.preferences.description = {
+        score: popularity,
+        value: properties.description.substring(0, 100)
+      };
+    }
+
+    if (properties.melody) {
+      insights.preferences.melody = {
+        score: popularity,
+        value: properties.melody
+      };
+    }
+
+    if (properties.rhythm) {
+      insights.preferences.rhythm = {
+        score: popularity,
+        value: properties.rhythm
+      };
+    }
+
+    if (properties.tempo) {
+      insights.preferences.tempo = {
+        score: popularity,
+        value: properties.tempo
+      };
+    }
+
+    if (properties.vocals) {
+      insights.preferences.vocals = {
+        score: popularity,
+        value: properties.vocals
+      };
+    }
+
+    // Extract interests from types
+    types.forEach((type, index) => {
+      if (type.includes('genre')) {
+        insights.interests[`genre_${index}`] = {
+          score: popularity,
+          value: type.split(':').pop() || type
+        };
+      }
+      if (type.includes('tag')) {
+        insights.interests[`tag_${index}`] = {
+          score: popularity,
+          value: type.split(':').pop() || type
+        };
+      }
+    });
+
+    // Extract demographics based on popularity
+    if (popularity > 0.8) {
+      insights.demographics.popularity = {
+        score: popularity,
+        value: 'high_popularity'
+      };
+    } else if (popularity > 0.5) {
+      insights.demographics.popularity = {
+        score: popularity,
+        value: 'medium_popularity'
+      };
+    } else {
+      insights.demographics.popularity = {
+        score: popularity,
+        value: 'low_popularity'
+      };
+    }
+
+    // Extract behaviors from properties
+    if (properties.performance) {
+      insights.behaviors.performance = {
+        score: popularity,
+        value: properties.performance
+      };
+    }
+
+    // Extract affinities from entity name and types
+    insights.affinities.entity_type = {
+      score: popularity,
+      value: entityData.name || 'unknown'
+    };
+
+    // Check if we have meaningful insights
+    const totalInsights = Object.keys(insights.preferences).length +
+                         Object.keys(insights.interests).length +
+                         Object.keys(insights.demographics).length +
+                         Object.keys(insights.behaviors).length +
+                         Object.keys(insights.affinities).length;
+
+    return totalInsights > 0 ? insights : null;
+  }
+
+  /**
+   * Get mock insights for fallback
+   * @returns {Object} - Mock insights object
+   * @private
+   */
+  _getMockInsights() {
+    return {
+      insights: [
+        {
+          sourceEntityId: 'mock_jazz_entity',
+          preferences: {
+            music_genre: { score: 0.85, value: 'jazz' },
+            music_style: { score: 0.8, value: 'smooth_jazz' },
+            food_style: { score: 0.75, value: 'fine_dining' },
+            travel_style: { score: 0.7, value: 'luxury' },
+            entertainment: { score: 0.8, value: 'live_music' }
+          },
+          demographics: {
+            age_group: { score: 0.75, value: 'millennials' },
+            income_level: { score: 0.7, value: 'high' },
+            lifestyle: { score: 0.8, value: 'urban_professional' }
+          },
+          interests: {
+            culture: { score: 0.85, value: 'music_culture' },
+            entertainment: { score: 0.9, value: 'live_performances' },
+            social: { score: 0.7, value: 'nightlife' }
+          },
+          behaviors: {
+            dining: { score: 0.8, value: 'upscale_restaurants' },
+            entertainment: { score: 0.85, value: 'music_venues' },
+            travel: { score: 0.75, value: 'luxury_accommodations' }
+          },
+          affinities: {
+            music_artists: { score: 0.8, value: 'jazz_legends' },
+            venues: { score: 0.75, value: 'jazz_clubs' },
+            experiences: { score: 0.8, value: 'intimate_performances' }
+          }
+        },
+        {
+          sourceEntityId: 'mock_dining_entity',
+          preferences: {
+            food_style: { score: 0.9, value: 'fine_dining' },
+            cuisine_type: { score: 0.85, value: 'international' },
+            dining_atmosphere: { score: 0.8, value: 'elegant' },
+            wine_preference: { score: 0.75, value: 'premium_wines' }
+          },
+          demographics: {
+            age_group: { score: 0.7, value: 'millennials' },
+            income_level: { score: 0.85, value: 'high' },
+            lifestyle: { score: 0.8, value: 'luxury_lifestyle' }
+          },
+          interests: {
+            food_culture: { score: 0.9, value: 'culinary_arts' },
+            wine: { score: 0.8, value: 'wine_tasting' },
+            social: { score: 0.75, value: 'fine_dining_experiences' }
+          },
+          behaviors: {
+            dining: { score: 0.9, value: 'upscale_restaurants' },
+            social: { score: 0.8, value: 'business_entertainment' },
+            travel: { score: 0.75, value: 'luxury_travel' }
+          },
+          affinities: {
+            restaurants: { score: 0.85, value: 'michelin_starred' },
+            chefs: { score: 0.8, value: 'celebrity_chefs' },
+            experiences: { score: 0.85, value: 'tasting_menus' }
+          }
+        }
+      ],
+      tasteProfile: {
+        topPreferences: [
+          { key: 'food_style', count: 2, avgScore: 0.825, totalScore: 1.65 },
+          { key: 'music_genre', count: 1, avgScore: 0.85, totalScore: 0.85 },
+          { key: 'dining_atmosphere', count: 1, avgScore: 0.8, totalScore: 0.8 }
+        ],
+        topDemographics: [
+          { key: 'income_level', count: 2, avgScore: 0.775, totalScore: 1.55 },
+          { key: 'age_group', count: 2, avgScore: 0.725, totalScore: 1.45 },
+          { key: 'lifestyle', count: 2, avgScore: 0.8, totalScore: 1.6 }
+        ],
+        topInterests: [
+          { key: 'food_culture', count: 1, avgScore: 0.9, totalScore: 0.9 },
+          { key: 'entertainment', count: 1, avgScore: 0.9, totalScore: 0.9 },
+          { key: 'culture', count: 1, avgScore: 0.85, totalScore: 0.85 }
+        ],
+        topBehaviors: [
+          { key: 'dining', count: 2, avgScore: 0.85, totalScore: 1.7 },
+          { key: 'entertainment', count: 1, avgScore: 0.85, totalScore: 0.85 },
+          { key: 'travel', count: 2, avgScore: 0.75, totalScore: 1.5 }
+        ],
+        topAffinities: [
+          { key: 'experiences', count: 2, avgScore: 0.825, totalScore: 1.65 },
+          { key: 'restaurants', count: 1, avgScore: 0.85, totalScore: 0.85 },
+          { key: 'music_artists', count: 1, avgScore: 0.8, totalScore: 0.8 }
+        ]
+      },
+      metadata: {
+        source: 'mock',
+        entityCount: 2,
+        processedEntities: 2,
+        totalInsights: 2,
+        fallback: true,
+        timestamp: new Date().toISOString()
+      }
+    };
+  }
+
   /**
    * Get recommendations based on entity IDs
    * @param {string[]} entityIds - Array of entity IDs
@@ -197,88 +767,121 @@ class QlooClient {
     }
     
     if (!entityIds || !Array.isArray(entityIds) || entityIds.length === 0) {
-      console.warn('No entity IDs provided for recommendations');
+      console.warn('No entity IDs provided for recommendations, using mock data');
+      return this._getMockRecommendationsWithFallback();
+    }
+
+    // Filter out fallback URNs
+    const validEntityIds = entityIds.filter(entityId => {
+      const isFallback = entityId.includes('fallback');
+      if (isFallback) {
+        console.info(`Skipping fallback entity for recommendations: ${entityId}`);
+      }
+      return !isFallback;
+    });
+
+    if (validEntityIds.length === 0) {
+      console.warn('No valid entity IDs after filtering fallback URNs, using mock data');
       return this._getMockRecommendationsWithFallback();
     }
     
-    console.info(`Getting recommendations for ${entityIds.length} entities`);
+    console.info(`Getting recommendations for ${validEntityIds.length} entities`);
     
     try {
-      // Use the first entity ID to get similar entities
-      const entityId = entityIds[0];
+      // Get recommendations for multiple entities to increase variety
+      const allRecommendations = [];
+      const processedEntities = new Set();
       
-      // Use axios GET with the correct endpoint for similar entities
-      const response = await this._executeWithRetry(
-        () => axios.get(`${this.baseURL}/entities/${entityId}/similar`, {
-          params: {
-            entity_ids: entityId,
-            limit: 5,
-            locale: 'en'
-          },
-          headers: this._getAuthHeaders(),
-          timeout: 5000
-        }),
-        'get recommendations'
-      );
+      // Process more entities to get diverse recommendations
+      const entitiesToProcess = validEntityIds.slice(0, 10);
       
-      console.info('Qloo API request successful');
-      
-      // Check if response has results array
-      if (response.data && response.data.results && Array.isArray(response.data.results)) {
-        const recommendations = response.data.results;
-        console.info(`Received ${recommendations.length} recommendations from Qloo API`);
+      for (const entityId of entitiesToProcess) {
+        if (processedEntities.has(entityId)) continue;
+        processedEntities.add(entityId);
         
-        // If results array is empty, return fallback
-        if (recommendations.length === 0) {
-          console.warn('Empty results array from recommendations API, using fallback');
-          return this._getMockRecommendationsWithFallback();
-        }
-        
-        return {
-          recommendations: recommendations.map(item => ({
-            id: item.entity_id || `qloo_${Math.random().toString(36).substr(2, 9)}`,
-            name: item.name || item.title || 'Unknown',
-            description: item.description || item.summary || `Experience related to ${item.name}`,
-            categories: this._extractCategories(item),
-            rating: (item.popularity || item.score || 0.5) * 5, // Convert 0-1 to 0-5 scale
-            price_range: item.price_range || '$$',
-            location: item.location || 'Various',
-            duration: item.duration || '2-4 hours',
-            highlights: item.highlights || [`Explore ${item.name}`, 'Professional guidance', 'Memorable experience'],
-            type: item.type || 'entity',
-            score: item.relevance_score || item.score || 0.5,
-            metadata: item.metadata || {}
-          })),
-          metadata: {
-            source: 'qloo',
-            entityCount: entityIds.length,
-            fallback: false,
-            timestamp: new Date().toISOString()
+        try {
+          console.info(`Getting recommendations for entity: ${entityId}`);
+          
+          const response = await this._executeWithRetry(
+            () => axios.get(`${this.baseURL}/entities/${entityId}/similar`, {
+              params: {
+                entity_ids: entityId,
+                limit: 10, // Increased limit for more variety
+                locale: 'en'
+              },
+              headers: this._getAuthHeaders(),
+              timeout: 5000
+            }),
+            `get recommendations for ${entityId}`
+          );
+          
+          if (response.data && response.data.results && Array.isArray(response.data.results)) {
+            const recommendations = response.data.results;
+            console.info(`Received ${recommendations.length} recommendations for entity ${entityId}`);
+            
+            // Add source entity info to each recommendation
+            const enhancedRecommendations = recommendations.map(item => ({
+              ...item,
+              sourceEntityId: entityId,
+              sourceEntityName: entityId // We'll enhance this later
+            }));
+            
+            allRecommendations.push(...enhancedRecommendations);
           }
-        };
-      } else {
-        // Log warning and return fallback if results is not an array
-        console.warn('Unexpected response format from recommendations API', {
-          hasResults: !!response.data?.results,
-          isResultsArray: Array.isArray(response.data?.results),
-          dataKeys: response.data ? Object.keys(response.data) : []
-        });
-        
+        } catch (error) {
+          console.warn(`Failed to get recommendations for entity ${entityId}:`, error.message);
+          // Continue with other entities
+        }
+      }
+      
+      console.info(`Total recommendations collected: ${allRecommendations.length}`);
+      
+      // Apply affinity filtering and deduplication
+      const filteredRecommendations = this._filterAndDeduplicateRecommendations(allRecommendations);
+      
+      console.info(`After filtering and deduplication: ${filteredRecommendations.length} recommendations`);
+      
+      if (filteredRecommendations.length === 0) {
+        console.warn('No recommendations after filtering, using fallback');
         return this._getMockRecommendationsWithFallback();
       }
+      
+      return {
+        recommendations: filteredRecommendations.map(item => ({
+          id: item.entity_id || `qloo_${Math.random().toString(36).substr(2, 9)}`,
+          name: item.name || item.title || 'Unknown',
+          description: item.description || item.summary || `Experience related to ${item.name}`,
+          categories: this._extractCategories(item),
+          rating: (item.popularity || item.score || 0.5) * 5, // Convert 0-1 to 0-5 scale
+          price_range: item.price_range || '$$',
+          location: item.location || 'Various',
+          duration: item.duration || '2-4 hours',
+          highlights: this._generateUserFriendlyHighlights(item),
+          type: item.type || 'entity',
+          score: item.relevance_score || item.score || 0.5,
+          affinity_score: item.affinity_score || item.score || 0.5,
+          metadata: {
+            ...item.metadata,
+            sourceEntityId: item.sourceEntityId,
+            sourceEntityName: item.sourceEntityName
+          }
+        })),
+        metadata: {
+          source: 'qloo',
+          entityCount: entityIds.length,
+          processedEntities: entitiesToProcess.length,
+          totalRecommendations: allRecommendations.length,
+          filteredRecommendations: filteredRecommendations.length,
+          fallback: false,
+          timestamp: new Date().toISOString()
+        }
+      };
     } catch (error) {
-      // Log error and return fallback for all errors
-      if (error.response && error.response.status === 429) {
-        console.warn('Rate limit exceeded for Qloo API, using fallback', {
-          status: 429
-        });
-      } else {
-        console.error('Error getting recommendations from Qloo API', {
-          error: error.message,
-          status: error.response?.status,
-          code: error.code
-        });
-      }
+      console.error('Error getting recommendations from Qloo API', {
+        error: error.message,
+        status: error.response?.status,
+        code: error.code
+      });
       
       return this._getMockRecommendationsWithFallback();
     }
@@ -302,6 +905,16 @@ class QlooClient {
       // Keep these for backward compatibility
       headers['Authorization'] = `Bearer ${this.apiKey}`;
       headers['api-key'] = this.apiKey;
+      
+      // Debug logging for authentication
+      console.log('Auth headers debug:', {
+        hasApiKey: !!this.apiKey,
+        apiKeyLength: this.apiKey ? this.apiKey.length : 0,
+        apiKeyPrefix: this.apiKey ? this.apiKey.substring(0, 10) + '...' : 'none',
+        headers: Object.keys(headers)
+      });
+    } else {
+      console.warn('No API key available for authentication');
     }
     
     return headers;
@@ -465,8 +1078,6 @@ class QlooClient {
       return this.getMockRecommendations({ interests, location, budget });
     }
   }
-
-
 
   async callQlooAPI({ interests, location, budget }) {
     // Qloo hackathon API specific request format
@@ -771,6 +1382,146 @@ class QlooClient {
   }
 
   /**
+   * Filter and deduplicate recommendations based on affinity scores and relevance
+   * @param {Array} recommendations - Array of raw recommendations
+   * @returns {Array} - Filtered and deduplicated recommendations
+   * @private
+   */
+  _filterAndDeduplicateRecommendations(recommendations) {
+    if (!Array.isArray(recommendations) || recommendations.length === 0) {
+      return [];
+    }
+    
+    // Enhanced configuration for filtering with better thresholds
+    const AFFINITY_CONFIG = {
+      minScore: 0.3,        // Higher minimum score for quality
+      preferredScore: 0.5,  // Higher preferred score for relevance
+      maxResults: 25,       // More results for better variety
+      noiseThreshold: 0.2,  // Higher noise threshold
+      crossTypeBonus: 0.1   // Bonus for cross-type relevance
+    };
+    
+    // Add affinity scores if not present and enhance with cross-type analysis
+    const recommendationsWithScore = recommendations.map(rec => {
+      const baseScore = rec.affinity_score || rec.score || rec.relevance_score || 0.5;
+      
+      // Add cross-type bonus if entity has multiple types
+      let enhancedScore = baseScore;
+      if (rec.types && Array.isArray(rec.types) && rec.types.length > 1) {
+        enhancedScore += AFFINITY_CONFIG.crossTypeBonus;
+      }
+      
+      // Add bonus for high-quality entities (URNs)
+      if (rec.urn && rec.urn.startsWith('urn:')) {
+        enhancedScore += 0.05;
+      }
+      
+      return {
+        ...rec,
+        affinity_score: Math.min(enhancedScore, 1.0), // Cap at 1.0
+        original_score: baseScore
+      };
+    });
+    
+    // Filter by minimum affinity score
+    const filteredByAffinity = recommendationsWithScore.filter(rec => 
+      rec.affinity_score >= AFFINITY_CONFIG.minScore
+    );
+    
+    // Remove noisy results (very low scores)
+    const cleanRecommendations = filteredByAffinity.filter(rec =>
+      rec.affinity_score >= AFFINITY_CONFIG.noiseThreshold
+    );
+    
+    // Deduplicate by entity_id and name to avoid similar recommendations
+    const uniqueRecommendations = [];
+    const seenIds = new Set();
+    const seenNames = new Set();
+    
+    for (const rec of cleanRecommendations) {
+      const entityId = rec.entity_id || rec.id;
+      const name = (rec.name || rec.title || '').toLowerCase().trim();
+      
+      // Check if we've seen this entity ID or a very similar name
+      if (entityId && !seenIds.has(entityId) && !seenNames.has(name)) {
+        seenIds.add(entityId);
+        seenNames.add(name);
+        uniqueRecommendations.push(rec);
+      }
+    }
+    
+    // Sort by affinity score but add some randomness for variety
+    const sortedRecommendations = uniqueRecommendations.sort((a, b) => {
+      const scoreDiff = b.affinity_score - a.affinity_score;
+      // Add small random factor to break ties and increase variety
+      if (Math.abs(scoreDiff) < 0.1) {
+        return Math.random() - 0.5;
+      }
+      return scoreDiff;
+    });
+    
+    // Limit results
+    const limitedRecommendations = sortedRecommendations.slice(0, AFFINITY_CONFIG.maxResults);
+    
+    console.info('Affinity filtering and deduplication completed', {
+      originalCount: recommendations.length,
+      filteredByAffinity: filteredByAffinity.length,
+      cleanCount: cleanRecommendations.length,
+      uniqueCount: uniqueRecommendations.length,
+      finalCount: limitedRecommendations.length,
+      minScore: AFFINITY_CONFIG.minScore,
+      noiseThreshold: AFFINITY_CONFIG.noiseThreshold
+    });
+    
+    return limitedRecommendations;
+  }
+
+  /**
+   * Generate user-friendly highlights for recommendations
+   * @param {Object} item - Entity item from Qloo API
+   * @returns {Array} - Array of user-friendly highlights
+   * @private
+   */
+  _generateUserFriendlyHighlights(item) {
+    const highlights = [];
+    
+    // Add from existing highlights if they're user-friendly
+    if (item.highlights && Array.isArray(item.highlights)) {
+      item.highlights.forEach(highlight => {
+        if (typeof highlight === 'string' && 
+            !highlight.startsWith('urn:') && 
+            !highlight.includes('{') && 
+            highlight.length < 100) {
+          highlights.push(highlight);
+        }
+      });
+    }
+    
+    // Generate highlights based on categories and type
+    const categories = this._extractCategories(item);
+    const name = item.name || item.title || '';
+    
+    // Add category-based highlights
+    if (categories.includes('dining') || name.toLowerCase().includes('dining')) {
+      highlights.push('Gourmet cuisine', 'Ocean views', 'Fine dining experience');
+    } else if (categories.includes('adventure') || name.toLowerCase().includes('adventure')) {
+      highlights.push('Professional guide', 'Equipment included', 'Thrilling experience');
+    } else if (categories.includes('culture') || name.toLowerCase().includes('culture')) {
+      highlights.push('Expert guide', 'Historical insights', 'Cultural immersion');
+    } else if (categories.includes('wellness') || name.toLowerCase().includes('wellness')) {
+      highlights.push('Relaxing atmosphere', 'Professional staff', 'Health benefits');
+    } else if (categories.includes('nature') || name.toLowerCase().includes('nature')) {
+      highlights.push('Natural beauty', 'Outdoor experience', 'Scenic views');
+    } else {
+      highlights.push('Professional guidance', 'Memorable experience', 'Quality service');
+    }
+    
+    // Remove duplicates and limit to 3 highlights
+    const uniqueHighlights = [...new Set(highlights)];
+    return uniqueHighlights.slice(0, 3);
+  }
+
+  /**
    * Extract categories from Qloo entity data
    * @param {Object} item - Entity item from Qloo API
    * @returns {Array} - Array of categories
@@ -779,17 +1530,25 @@ class QlooClient {
   _extractCategories(item) {
     const categories = [];
     
-    // Add from categories array
+    // Add from categories array (only if they're user-friendly)
     if (item.categories && Array.isArray(item.categories)) {
-      categories.push(...item.categories);
+      item.categories.forEach(cat => {
+        if (typeof cat === 'string' && !cat.startsWith('urn:') && cat.length < 50) {
+          categories.push(cat);
+        }
+      });
     }
     
-    // Add from tags array
+    // Add from tags array (only if they're user-friendly)
     if (item.tags && Array.isArray(item.tags)) {
-      categories.push(...item.tags);
+      item.tags.forEach(tag => {
+        if (typeof tag === 'string' && !tag.startsWith('urn:') && tag.length < 50) {
+          categories.push(tag);
+        }
+      });
     }
     
-    // Extract from types array (Qloo specific format)
+    // Extract meaningful categories from types array (Qloo specific format)
     if (item.types && Array.isArray(item.types)) {
       item.types.forEach(type => {
         if (typeof type === 'string') {
@@ -797,7 +1556,12 @@ class QlooClient {
           const parts = type.split(':');
           if (parts.length > 2) {
             const category = parts[parts.length - 1];
-            if (category && !categories.includes(category)) {
+            // Only add user-friendly categories (not technical URNs)
+            if (category && 
+                !category.includes('_') && 
+                !category.includes('urn:') && 
+                category.length < 30 &&
+                !categories.includes(category)) {
               categories.push(category);
             }
           }
@@ -805,8 +1569,11 @@ class QlooClient {
       });
     }
     
-    // Add disambiguation as category if available
-    if (item.disambiguation && !categories.includes(item.disambiguation)) {
+    // Add disambiguation as category if available and user-friendly
+    if (item.disambiguation && 
+        !item.disambiguation.startsWith('urn:') && 
+        item.disambiguation.length < 50 &&
+        !categories.includes(item.disambiguation)) {
       categories.push(item.disambiguation);
     }
     
@@ -815,7 +1582,8 @@ class QlooClient {
       categories.push('general');
     }
     
-    return categories;
+    // Limit to 3 most relevant categories
+    return categories.slice(0, 3);
   }
 }
 

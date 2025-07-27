@@ -2,11 +2,11 @@
 
 A personalized cruise travel assistant that provides tailored recommendations based on user interests, location preferences, and budget, enhanced with AI insights from ChatGPT.
 
-## 🎯 Project Status: Docker Ready with Full Containerization ✅
+## 🎯 Project Status: Advanced Entity Resolution & Insights System ✅
 
-**Current Version:** 3.1.0 - Docker Ready  
-**Status:** Production Ready with Docker & AI Enhancement  
-**Last Updated:** July 25, 2025
+**Current Version:** 3.2.0 - Advanced Entity Resolution  
+**Status:** Production Ready with Entity Resolution & AI Enhancement  
+**Last Updated:** January 27, 2025
 
 ### ✅ Completed Features
 - [x] Interactive interest selection UI
@@ -16,6 +16,10 @@ A personalized cruise travel assistant that provides tailored recommendations ba
 - [x] **Full Docker containerization with nginx proxy**
 - [x] **Multi-stage Docker builds for optimization**
 - [x] **Health checks and monitoring**
+- [x] **Advanced Entity Resolution System**
+- [x] **Insights Aggregator with Cross-type Analysis**
+- [x] **URN Registry Management**
+- [x] **Enhanced API Testing & Validation**
 - [x] Real-time recommendation filtering
 - [x] Responsive design with modern UI
 - [x] Comprehensive logging with Winston
@@ -41,6 +45,14 @@ A personalized cruise travel assistant that provides tailored recommendations ba
 - [x] **Budget Tips** - AI-powered cost-saving suggestions
 - [x] **Best Times** - Intelligent timing recommendations
 - [x] **Fallback System** - Graceful degradation when AI is unavailable
+
+### 🔍 Entity Resolution Features (New in v3.2!)
+- [x] **Intelligent Entity Resolution** - Convert user input to Qloo entities
+- [x] **Confidence-based Filtering** - Configurable confidence thresholds
+- [x] **Cross-type Insights Analysis** - Brand, place, tag, audience relationships
+- [x] **Taste Profile Generation** - Comprehensive user preference mapping
+- [x] **URN Registry Management** - Entity validation and caching
+- [x] **Enhanced API Testing** - Comprehensive API key validation
 
 ## 🚀 Quick Start
 
@@ -139,13 +151,17 @@ cruise-assistant-mvp/
 │   │   ├── services/
 │   │   │   ├── qlooClient.js  # Qloo API integration
 │   │   │   ├── llmClient.js   # OpenAI ChatGPT integration
-│   │   │   └── recommendationGenerator.js # Recommendation logic
+│   │   │   ├── recommendationGenerator.js # Recommendation logic
+│   │   │   ├── entityResolver.js # Entity resolution service
+│   │   │   ├── insightsAggregator.js # Insights aggregation
+│   │   │   └── urnRegistry.js # URN registry management
 │   │   ├── mock/
 │   │   │   └── qlooMock.json  # Mock recommendation data
 │   │   ├── utils/
 │   │   │   └── logger.js      # Winston logging setup
 │   │   └── __tests__/         # Backend tests
 │   ├── logs/                  # Application logs
+│   ├── test-api-key.js        # API key validation script
 │   ├── Dockerfile             # Multi-stage Docker build
 │   └── package.json
 ├── frontend/                   # React application
@@ -278,6 +294,43 @@ The system now uses OpenAI's ChatGPT to provide:
 - **Secondary**: Qloo API only (if ChatGPT unavailable)
 - **Tertiary**: Mock data (if APIs unavailable)
 
+## 🔍 Entity Resolution & Insights System
+
+### Entity Resolution Pipeline
+The system now includes advanced entity resolution capabilities:
+
+1. **Intelligent Input Processing** - Convert user interests to Qloo entities
+2. **Confidence-based Filtering** - Filter entities by confidence scores
+3. **URN Validation** - Validate and normalize entity URNs
+4. **Batch Processing** - Efficiently resolve multiple entities
+5. **Caching System** - Cache resolved entities for performance
+
+### Insights Aggregation
+Advanced insights processing for enhanced recommendations:
+
+1. **Cross-type Analysis** - Analyze relationships between brands, places, tags, and audiences
+2. **Taste Profile Generation** - Build comprehensive user preference profiles
+3. **Preference Aggregation** - Combine insights from multiple entities
+4. **Synergy Calculations** - Calculate cross-type relationship scores
+5. **Profile Strength Metrics** - Measure the quality of generated profiles
+
+### URN Registry Management
+Robust entity registry system:
+
+1. **URN Validation** - Validate entity URNs against patterns
+2. **Registry Synchronization** - Sync with Qloo API registry
+3. **Cache Management** - TTL-based caching with automatic refresh
+4. **Fallback Registry** - Default URNs when API unavailable
+5. **Health Monitoring** - Registry health and performance tracking
+
+### API Testing & Validation
+Enhanced API testing capabilities:
+
+1. **API Key Validation** - Test API keys with multiple auth formats
+2. **Connectivity Testing** - Verify API connectivity and responses
+3. **Error Analysis** - Comprehensive error reporting and analysis
+4. **Environment Validation** - Verify environment variable configuration
+
 ## 🧪 Testing
 
 ### Automated Testing
@@ -320,6 +373,13 @@ The `npm run qa` command runs comprehensive testing:
 - ChatGPT enhancement provides AI insights
 - Response format matches expected schema
 
+✅ **Entity Resolution System**
+- Entity resolver processes user input correctly
+- URN registry validates and manages entities
+- Insights aggregator generates taste profiles
+- Cross-type analysis works properly
+- Fallback resolution when APIs unavailable
+
 ✅ **AI Integration**
 - OpenAI API key validation
 - ChatGPT enhancement completion
@@ -331,6 +391,7 @@ The `npm run qa` command runs comprehensive testing:
 - Winston logs incoming requests
 - API usage is logged
 - AI enhancement status is tracked
+- Entity resolution metrics are captured
 - Error scenarios are captured
 - Log files are created and populated
 
@@ -339,6 +400,7 @@ The `npm run qa` command runs comprehensive testing:
 - Graceful degradation to mock data
 - Error handling doesn't break user experience
 - AI enhancement gracefully fails when needed
+- Entity resolution falls back to default entities
 
 ### Manual Testing Checklist
 
@@ -370,8 +432,12 @@ After running `npm run qa`, perform these manual tests:
 - **Logging**: Winston
 - **Testing**: Jest + Supertest
 - **API Integration**: 
-  - Qloo API (recommendations)
+  - Qloo API (recommendations, entity resolution, insights)
   - OpenAI ChatGPT API (AI enhancement)
+- **Entity Resolution**: 
+  - Entity Resolver Service (intelligent entity resolution)
+  - Insights Aggregator (cross-type analysis)
+  - URN Registry (entity validation and caching)
 
 ### Frontend
 - **Framework**: React 18
@@ -470,25 +536,31 @@ npm run start:backend # Start production backend
 
 ## 🔮 Roadmap
 
-### Phase 2: Enhanced AI Features (Next)
+### Phase 2: Enhanced Entity Resolution (Completed ✅)
+- [x] Advanced entity resolution system
+- [x] Cross-type insights aggregation
+- [x] URN registry management
+- [x] Enhanced API testing and validation
+
+### Phase 3: Advanced AI Features (Next)
 - [ ] Advanced personalization with user profiles
 - [ ] Real-time pricing integration
 - [ ] Multi-language support
 - [ ] Voice assistant integration
 
-### Phase 3: User Experience
+### Phase 4: User Experience
 - [ ] User authentication and profiles
 - [ ] Save favorite recommendations
 - [ ] Recommendation history
 - [ ] Social sharing features
 
-### Phase 4: Advanced Features
+### Phase 5: Advanced Features
 - [ ] Real-time pricing integration
 - [ ] Booking system integration
 - [ ] Push notifications
 - [ ] Mobile app development
 
-### Phase 5: Analytics & AI
+### Phase 6: Analytics & AI
 - [ ] User behavior analytics
 - [ ] Machine learning recommendations
 - [ ] A/B testing framework

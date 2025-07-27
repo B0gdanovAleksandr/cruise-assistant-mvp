@@ -279,14 +279,20 @@ class RecommendationGenerator {
   enhanceDescription(baseDescription, entities, recommendations) {
     let enhanced = baseDescription;
 
-    // If we have entity data, try to personalize
+    // If we have entity data, try to personalize more naturally
     if (entities && entities.length > 0) {
       const topEntity = entities[0];
-      if (topEntity.name && topEntity.name !== 'Unknown') {
-        // Keep description under 150 characters
-        const personalized = `${baseDescription} featuring ${topEntity.name}`;
-        if (personalized.length <= 150) {
-          enhanced = personalized;
+      if (topEntity.name && topEntity.name !== 'Unknown' && topEntity.name !== 'Adventure') {
+        // Only add entity name if it's meaningful and not generic
+        const entityName = topEntity.name;
+        const isGenericName = ['Adventure', 'History', 'Nature', 'Culture', 'Food', 'Music'].includes(entityName);
+        
+        if (!isGenericName) {
+          // Keep description under 150 characters
+          const personalized = `${baseDescription} featuring ${entityName}`;
+          if (personalized.length <= 150) {
+            enhanced = personalized;
+          }
         }
       }
     }
@@ -294,7 +300,7 @@ class RecommendationGenerator {
     // If we have recommendation data, try to add location context
     if (recommendations && recommendations.length > 0) {
       const topRec = recommendations[0];
-      if (topRec.metadata && topRec.metadata.location) {
+      if (topRec.metadata && topRec.metadata.location && topRec.metadata.location !== 'Various') {
         const locationEnhanced = `${enhanced} in ${topRec.metadata.location}`;
         if (locationEnhanced.length <= 150) {
           enhanced = locationEnhanced;

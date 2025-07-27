@@ -26,7 +26,9 @@ function RecommendationsList({ recommendations, onChangeInterests, loading }) {
           {recommendations.aiInsights.summary && (
             <div className="ai-summary">
               <h4>📋 Summary</h4>
-              <p>{recommendations.aiInsights.summary}</p>
+              <p>{typeof recommendations.aiInsights.summary === 'string' ? 
+                  recommendations.aiInsights.summary : 
+                  JSON.stringify(recommendations.aiInsights.summary)}</p>
             </div>
           )}
           
@@ -34,9 +36,15 @@ function RecommendationsList({ recommendations, onChangeInterests, loading }) {
             <div className="ai-advice">
               <h4>💡 Personalized Advice</h4>
               <ul>
-                {recommendations.aiInsights.personalizedAdvice.map((advice, index) => (
-                  <li key={index}>{advice}</li>
-                ))}
+                {recommendations.aiInsights.personalizedAdvice.map((advice, index) => {
+                  // Ensure advice is a string
+                  const adviceStr = typeof advice === 'string' ? advice : 
+                                   typeof advice === 'object' ? JSON.stringify(advice) : 
+                                   String(advice);
+                  return (
+                    <li key={index}>{adviceStr}</li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -45,9 +53,15 @@ function RecommendationsList({ recommendations, onChangeInterests, loading }) {
             <div className="ai-budget">
               <h4>💰 Budget Tips</h4>
               <ul>
-                {recommendations.aiInsights.budgetTips.map((tip, index) => (
-                  <li key={index}>{tip}</li>
-                ))}
+                {recommendations.aiInsights.budgetTips.map((tip, index) => {
+                  // Ensure tip is a string
+                  const tipStr = typeof tip === 'string' ? tip : 
+                                typeof tip === 'object' ? JSON.stringify(tip) : 
+                                String(tip);
+                  return (
+                    <li key={index}>{tipStr}</li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -56,9 +70,15 @@ function RecommendationsList({ recommendations, onChangeInterests, loading }) {
             <div className="ai-timing">
               <h4>⏰ Best Times</h4>
               <ul>
-                {recommendations.aiInsights.bestTimes.map((time, index) => (
-                  <li key={index}>{time}</li>
-                ))}
+                {recommendations.aiInsights.bestTimes.map((time, index) => {
+                  // Ensure time is a string
+                  const timeStr = typeof time === 'string' ? time : 
+                                 typeof time === 'object' ? JSON.stringify(time) : 
+                                 String(time);
+                  return (
+                    <li key={index}>{timeStr}</li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -73,21 +93,31 @@ function RecommendationsList({ recommendations, onChangeInterests, loading }) {
           return (
             <div key={rec.id} className="recommendation-card">
               <div className="rec-header">
-                <h3>{String(rec.name || 'Unknown')}</h3>
+                <h3>{typeof rec.name === 'string' ? rec.name : 
+                     typeof rec.name === 'object' ? JSON.stringify(rec.name) : 
+                     String(rec.name || 'Unknown')}</h3>
                 <div className="rec-rating">⭐ {String(rec.rating || 0)}</div>
               </div>
               
-              <p className="rec-description">{String(rec.description || 'No description available')}</p>
+              <p className="rec-description">{typeof rec.description === 'string' ? rec.description : 
+                                           typeof rec.description === 'object' ? JSON.stringify(rec.description) : 
+                                           String(rec.description || 'No description available')}</p>
               
               <div className="rec-details">
                 <div className="rec-detail">
-                  <strong>Duration:</strong> {String(rec.duration || 'Not specified')}
+                  <strong>Duration:</strong> {typeof rec.duration === 'string' ? rec.duration : 
+                                            typeof rec.duration === 'object' ? JSON.stringify(rec.duration) : 
+                                            String(rec.duration || 'Not specified')}
                 </div>
                 <div className="rec-detail">
-                  <strong>Price:</strong> {String(rec.price_range || 'Not specified')}
+                  <strong>Price:</strong> {typeof rec.price_range === 'string' ? rec.price_range : 
+                                         typeof rec.price_range === 'object' ? JSON.stringify(rec.price_range) : 
+                                         String(rec.price_range || 'Not specified')}
                 </div>
                 <div className="rec-detail">
-                  <strong>Location:</strong> {String(rec.location || 'Not specified')}
+                  <strong>Location:</strong> {typeof rec.location === 'string' ? rec.location : 
+                                            typeof rec.location === 'object' ? JSON.stringify(rec.location) : 
+                                            String(rec.location || 'Not specified')}
                 </div>
               </div>
               

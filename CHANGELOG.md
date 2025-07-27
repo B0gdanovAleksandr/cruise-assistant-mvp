@@ -5,6 +5,114 @@ All notable changes to the Cruise Personal Assistant MVP will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2025-01-27
+
+### 🔍 Advanced Entity Resolution & Insights System
+
+#### Added
+- **Entity Resolver Service**
+  - Intelligent entity resolution from user input using Qloo API
+  - Confidence-based filtering with configurable thresholds
+  - Fallback resolution system when APIs are unavailable
+  - URN validation and normalization
+  - Batch entity resolution for multiple URNs
+  - Caching system for resolved entities
+
+- **Insights Aggregator Service**
+  - Cross-type insights analysis (brand, place, tag, audience)
+  - Taste profile generation from multiple entities
+  - Preference and demographic aggregation
+  - Cross-type relationship mapping
+  - Recommendation enhancement with insights data
+  - Profile strength calculation
+
+- **URN Registry Service**
+  - URN validation and registry management
+  - Entity caching with TTL (24-hour refresh)
+  - Registry synchronization with Qloo API
+  - Fallback registry with default URNs
+  - Entity ID to URN conversion
+  - Registry statistics and monitoring
+
+- **Enhanced API Testing**
+  - API key validation script (`test-api-key.js`)
+  - Multiple authentication header formats testing
+  - Comprehensive error handling and reporting
+  - Environment variable validation
+
+#### Technical Improvements
+- **Entity Resolution Pipeline**
+  - Multi-step entity resolution workflow
+  - Confidence scoring and filtering
+  - Source term tracking for resolved entities
+  - Validation against URN patterns
+  - Graceful degradation to fallback mode
+
+- **Insights Processing**
+  - Weighted aggregation by data type
+  - Cross-type synergy calculations
+  - Profile strength metrics
+  - Recommendation scoring enhancement
+  - Context-aware description enhancement
+
+- **Registry Management**
+  - Automatic registry refresh (24-hour intervals)
+  - Cache expiration and cleanup
+  - Multiple API endpoint fallback
+  - Default URN provisioning
+  - Registry health monitoring
+
+#### Testing & Quality Assurance
+- **Comprehensive Test Coverage**
+  - Entity resolver unit tests with mocking
+  - URN registry validation tests
+  - Insights aggregator functionality tests
+  - API integration testing
+  - Error handling and fallback scenarios
+
+- **API Key Testing**
+  - Multiple authentication format validation
+  - API connectivity testing
+  - Error response analysis
+  - Environment variable verification
+
+#### Configuration & Monitoring
+- **Enhanced Logging**
+  - Entity resolution tracking
+  - Insights aggregation metrics
+  - Registry synchronization logs
+  - Cache performance monitoring
+  - Error rate tracking
+
+- **Performance Optimization**
+  - Entity caching with TTL
+  - Batch processing for multiple URNs
+  - Registry refresh optimization
+  - Memory-efficient data structures
+
+### 🧪 Testing Coverage
+- ✅ Entity resolution with various input types
+- ✅ URN validation and registry management
+- ✅ Insights aggregation and cross-type analysis
+- ✅ API key validation and authentication
+- ✅ Fallback system functionality
+- ✅ Cache management and expiration
+- ✅ Error handling and graceful degradation
+
+### 📦 Dependencies
+- **Backend**: Enhanced with entity resolution and insights processing
+- **Testing**: Comprehensive test suite with mocking
+- **API Integration**: Robust error handling and fallback systems
+
+### 🚀 Production Ready
+- Advanced entity resolution system
+- Comprehensive insights aggregation
+- Robust URN registry management
+- Enhanced API testing and validation
+- Improved error handling and monitoring
+
+---
+
 ## [3.1.0] - 2025-07-25
 
 ### 🐳 Docker Ready Release
