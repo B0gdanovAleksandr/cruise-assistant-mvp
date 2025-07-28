@@ -1,0 +1,642 @@
+[
+  {
+    "id": "event_001",
+    "title": "Mediterranean Cultural Tour",
+    "type": "excursion",
+    "description": "Explore ancient ruins and local culture. Visit historical sites and learn about the rich history of the Mediterranean region. Experience guided tours through ancient cities and archaeological sites.",
+    "tags": [
+      "culture",
+      "history",
+      "mediterranean",
+      "guided"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Mediterranean",
+    "duration": "4 hours",
+    "price": "$89"
+  },
+  {
+    "id": "event_002",
+    "title": "Greek Mythology Walking Tour",
+    "type": "excursion",
+    "description": "Discover the fascinating world of Greek mythology through interactive storytelling. Visit temples and monuments while learning about ancient gods and heroes.",
+    "tags": [
+      "culture",
+      "mythology",
+      "greece",
+      "walking"
+    ],
+    "experienceAffinity": 0.9,
+    "location": "Greece",
+    "duration": "3 hours",
+    "price": "$65"
+  },
+  {
+    "id": "event_003",
+    "title": "Roman Colosseum Experience",
+    "type": "excursion",
+    "description": "Step back in time at the iconic Colosseum. Learn about gladiatorial games and Roman history with expert guides.",
+    "tags": [
+      "culture",
+      "history",
+      "rome",
+      "colosseum"
+    ],
+    "experienceAffinity": 0.95,
+    "location": "Italy",
+    "duration": "2.5 hours",
+    "price": "$75"
+  },
+  {
+    "id": "event_004",
+    "title": "Luxury Spa Retreat",
+    "type": "wellness",
+    "description": "Indulge in a complete wellness experience with therapeutic massages, aromatherapy, and relaxation treatments.",
+    "tags": [
+      "wellness",
+      "spa",
+      "relaxation",
+      "luxury"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "Caribbean",
+    "duration": "3 hours",
+    "price": "$150"
+  },
+  {
+    "id": "event_005",
+    "title": "Yoga by the Sea",
+    "type": "wellness",
+    "description": "Practice yoga with ocean views. Morning and sunset sessions available for all skill levels.",
+    "tags": [
+      "wellness",
+      "yoga",
+      "ocean",
+      "meditation"
+    ],
+    "experienceAffinity": 0.6,
+    "location": "Hawaii",
+    "duration": "1.5 hours",
+    "price": "$45"
+  },
+  {
+    "id": "event_006",
+    "title": "Thermal Baths Experience",
+    "type": "wellness",
+    "description": "Relax in natural thermal springs with mineral-rich waters. Includes sauna and steam room access.",
+    "tags": [
+      "wellness",
+      "thermal",
+      "baths",
+      "natural"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Iceland",
+    "duration": "4 hours",
+    "price": "$120"
+  },
+  {
+    "id": "event_007",
+    "title": "Snorkeling Adventure",
+    "type": "activity",
+    "description": "Explore vibrant coral reefs and marine life. Professional guides and equipment provided.",
+    "tags": [
+      "adventure",
+      "snorkeling",
+      "marine",
+      "ocean"
+    ],
+    "experienceAffinity": 0.9,
+    "location": "Great Barrier Reef",
+    "duration": "3 hours",
+    "price": "$95"
+  },
+  {
+    "id": "event_008",
+    "title": "Mountain Hiking Expedition",
+    "type": "activity",
+    "description": "Challenge yourself with guided mountain hiking. Breathtaking views and wildlife encounters.",
+    "tags": [
+      "adventure",
+      "hiking",
+      "mountain",
+      "nature"
+    ],
+    "experienceAffinity": 0.85,
+    "location": "Swiss Alps",
+    "duration": "6 hours",
+    "price": "$110"
+  },
+  {
+    "id": "event_009",
+    "title": "Zip Line Adventure",
+    "type": "activity",
+    "description": "Soar through the treetops on thrilling zip lines. Multiple courses for different skill levels.",
+    "tags": [
+      "adventure",
+      "zipline",
+      "thrilling",
+      "forest"
+    ],
+    "experienceAffinity": 0.75,
+    "location": "Costa Rica",
+    "duration": "2 hours",
+    "price": "$85"
+  },
+  {
+    "id": "event_010",
+    "title": "Wine Tasting Experience",
+    "type": "dining",
+    "description": "Sample premium wines from local vineyards. Learn about wine making and pairing.",
+    "tags": [
+      "food",
+      "wine",
+      "tasting",
+      "luxury"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Tuscany",
+    "duration": "2.5 hours",
+    "price": "$125"
+  },
+  {
+    "id": "event_011",
+    "title": "Cooking Class with Chef",
+    "type": "dining",
+    "description": "Learn to cook authentic local dishes with professional chefs. Take home recipes and skills.",
+    "tags": [
+      "food",
+      "cooking",
+      "chef",
+      "learning"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "Thailand",
+    "duration": "4 hours",
+    "price": "$95"
+  },
+  {
+    "id": "event_012",
+    "title": "Street Food Tour",
+    "type": "dining",
+    "description": "Explore local street food culture. Taste authentic dishes from hidden gems.",
+    "tags": [
+      "food",
+      "street",
+      "local",
+      "authentic"
+    ],
+    "experienceAffinity": 0.65,
+    "location": "Singapore",
+    "duration": "3 hours",
+    "price": "$55"
+  },
+  {
+    "id": "event_013",
+    "title": "Family Beach Day",
+    "type": "family",
+    "description": "Perfect family outing with beach activities, games, and water sports for all ages.",
+    "tags": [
+      "family",
+      "beach",
+      "kids",
+      "fun"
+    ],
+    "experienceAffinity": 0.6,
+    "location": "Maldives",
+    "duration": "6 hours",
+    "price": "$75"
+  },
+  {
+    "id": "event_014",
+    "title": "Aquarium Adventure",
+    "type": "family",
+    "description": "Explore marine life in interactive aquariums. Educational and entertaining for children.",
+    "tags": [
+      "family",
+      "aquarium",
+      "marine",
+      "education"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "Dubai",
+    "duration": "3 hours",
+    "price": "$60"
+  },
+  {
+    "id": "event_015",
+    "title": "Theme Park Day",
+    "type": "family",
+    "description": "Thrilling rides and entertainment for the whole family. Multiple attractions and shows.",
+    "tags": [
+      "family",
+      "theme park",
+      "rides",
+      "entertainment"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Orlando",
+    "duration": "8 hours",
+    "price": "$120"
+  },
+  {
+    "id": "event_016",
+    "title": "Broadway Show",
+    "type": "entertainment",
+    "description": "Experience world-class theater performances. Premium seating and backstage tours available.",
+    "tags": [
+      "entertainment",
+      "broadway",
+      "theater",
+      "culture"
+    ],
+    "experienceAffinity": 0.85,
+    "location": "New York",
+    "duration": "3 hours",
+    "price": "$200"
+  },
+  {
+    "id": "event_017",
+    "title": "Jazz Night",
+    "type": "entertainment",
+    "description": "Enjoy live jazz music in intimate venues. Dinner and drinks included.",
+    "tags": [
+      "entertainment",
+      "jazz",
+      "music",
+      "dinner"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "New Orleans",
+    "duration": "4 hours",
+    "price": "$90"
+  },
+  {
+    "id": "event_018",
+    "title": "Comedy Club Night",
+    "type": "entertainment",
+    "description": "Laugh the night away with top comedians. Interactive and engaging performances.",
+    "tags": [
+      "entertainment",
+      "comedy",
+      "fun",
+      "nightlife"
+    ],
+    "experienceAffinity": 0.65,
+    "location": "Los Angeles",
+    "duration": "2 hours",
+    "price": "$45"
+  },
+  {
+    "id": "event_019",
+    "title": "Classical Music Concert",
+    "type": "entertainment",
+    "description": "Experience world-renowned orchestras performing classical masterpieces in stunning venues.",
+    "tags": [
+      "entertainment",
+      "classical",
+      "music",
+      "orchestra"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Vienna",
+    "duration": "2.5 hours",
+    "price": "$150"
+  },
+  {
+    "id": "event_020",
+    "title": "Rock Concert Experience",
+    "type": "entertainment",
+    "description": "Rock out to live performances by top artists in iconic venues with amazing acoustics.",
+    "tags": [
+      "entertainment",
+      "rock",
+      "music",
+      "concert"
+    ],
+    "experienceAffinity": 0.75,
+    "location": "London",
+    "duration": "3 hours",
+    "price": "$120"
+  },
+  {
+    "id": "event_021",
+    "title": "Opera Night",
+    "type": "entertainment",
+    "description": "Immerse yourself in the world of opera with stunning performances and elaborate costumes.",
+    "tags": [
+      "entertainment",
+      "opera",
+      "culture",
+      "classical"
+    ],
+    "experienceAffinity": 0.85,
+    "location": "Milan",
+    "duration": "4 hours",
+    "price": "$180"
+  },
+  {
+    "id": "event_022",
+    "title": "Electronic Music Festival",
+    "type": "entertainment",
+    "description": "Dance to the latest electronic beats with world-class DJs and spectacular light shows.",
+    "tags": [
+      "entertainment",
+      "electronic",
+      "music",
+      "festival"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "Berlin",
+    "duration": "6 hours",
+    "price": "$95"
+  },
+  {
+    "id": "event_023",
+    "title": "Fine Dining Experience",
+    "type": "dining",
+    "description": "Savor exquisite cuisine prepared by Michelin-starred chefs in elegant surroundings.",
+    "tags": [
+      "food",
+      "fine dining",
+      "luxury",
+      "gourmet"
+    ],
+    "experienceAffinity": 0.9,
+    "location": "Paris",
+    "duration": "3 hours",
+    "price": "$250"
+  },
+  {
+    "id": "event_024",
+    "title": "Seafood Feast",
+    "type": "dining",
+    "description": "Enjoy fresh seafood caught daily, prepared with local spices and traditional methods.",
+    "tags": [
+      "food",
+      "seafood",
+      "fresh",
+      "local"
+    ],
+    "experienceAffinity": 0.75,
+    "location": "Maine",
+    "duration": "2.5 hours",
+    "price": "$140"
+  },
+  {
+    "id": "event_025",
+    "title": "BBQ & Blues Festival",
+    "type": "dining",
+    "description": "Taste authentic barbecue while enjoying live blues music in a festive atmosphere.",
+    "tags": [
+      "food",
+      "bbq",
+      "music",
+      "festival"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "Memphis",
+    "duration": "5 hours",
+    "price": "$85"
+  },
+  {
+    "id": "event_026",
+    "title": "Sushi Masterclass",
+    "type": "dining",
+    "description": "Learn the art of sushi making from master chefs using the freshest ingredients.",
+    "tags": [
+      "food",
+      "sushi",
+      "japanese",
+      "cooking"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Tokyo",
+    "duration": "3 hours",
+    "price": "$160"
+  },
+  {
+    "id": "event_027",
+    "title": "Medieval Castle Tour",
+    "type": "excursion",
+    "description": "Explore ancient castles and learn about medieval history, knights, and royal families.",
+    "tags": [
+      "culture",
+      "history",
+      "medieval",
+      "castle"
+    ],
+    "experienceAffinity": 0.85,
+    "location": "Scotland",
+    "duration": "4 hours",
+    "price": "$95"
+  },
+  {
+    "id": "event_028",
+    "title": "Ancient Temple Discovery",
+    "type": "excursion",
+    "description": "Visit ancient temples and sacred sites while learning about spiritual traditions.",
+    "tags": [
+      "culture",
+      "history",
+      "temple",
+      "spiritual"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Cambodia",
+    "duration": "5 hours",
+    "price": "$75"
+  },
+  {
+    "id": "event_029",
+    "title": "Art Museum Tour",
+    "type": "excursion",
+    "description": "Explore world-famous art collections with expert guides explaining masterpieces.",
+    "tags": [
+      "culture",
+      "art",
+      "museum",
+      "guided"
+    ],
+    "experienceAffinity": 0.75,
+    "location": "Florence",
+    "duration": "3 hours",
+    "price": "$65"
+  },
+  {
+    "id": "event_030",
+    "title": "Traditional Craft Workshop",
+    "type": "excursion",
+    "description": "Learn traditional crafts from local artisans - pottery, weaving, or woodworking.",
+    "tags": [
+      "culture",
+      "crafts",
+      "traditional",
+      "hands-on"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "Morocco",
+    "duration": "4 hours",
+    "price": "$55"
+  },
+  {
+    "id": "event_031",
+    "title": "Scuba Diving Adventure",
+    "type": "activity",
+    "description": "Dive into crystal clear waters to explore underwater worlds and marine life.",
+    "tags": [
+      "adventure",
+      "scuba",
+      "diving",
+      "marine"
+    ],
+    "experienceAffinity": 0.9,
+    "location": "Great Barrier Reef",
+    "duration": "4 hours",
+    "price": "$180"
+  },
+  {
+    "id": "event_032",
+    "title": "Rock Climbing Experience",
+    "type": "activity",
+    "description": "Scale natural rock formations with professional guides and safety equipment.",
+    "tags": [
+      "adventure",
+      "climbing",
+      "rock",
+      "outdoor"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Yosemite",
+    "duration": "5 hours",
+    "price": "$130"
+  },
+  {
+    "id": "event_033",
+    "title": "White Water Rafting",
+    "type": "activity",
+    "description": "Navigate thrilling rapids with experienced guides through stunning river canyons.",
+    "tags": [
+      "adventure",
+      "rafting",
+      "rapids",
+      "river"
+    ],
+    "experienceAffinity": 0.85,
+    "location": "Colorado",
+    "duration": "6 hours",
+    "price": "$145"
+  },
+  {
+    "id": "event_034",
+    "title": "Wildlife Safari",
+    "type": "activity",
+    "description": "Spot exotic wildlife in their natural habitat with expert guides and comfortable vehicles.",
+    "tags": [
+      "adventure",
+      "wildlife",
+      "safari",
+      "nature"
+    ],
+    "experienceAffinity": 0.9,
+    "location": "Kenya",
+    "duration": "8 hours",
+    "price": "$220"
+  },
+  {
+    "id": "event_035",
+    "title": "Meditation Retreat",
+    "type": "wellness",
+    "description": "Deep meditation sessions in peaceful surroundings with experienced instructors.",
+    "tags": [
+      "wellness",
+      "meditation",
+      "retreat",
+      "peaceful"
+    ],
+    "experienceAffinity": 0.75,
+    "location": "Bali",
+    "duration": "6 hours",
+    "price": "$95"
+  },
+  {
+    "id": "event_036",
+    "title": "Forest Bathing Experience",
+    "type": "wellness",
+    "description": "Immerse yourself in nature therapy with guided forest walks and mindfulness practices.",
+    "tags": [
+      "wellness",
+      "forest",
+      "nature",
+      "mindfulness"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "Japan",
+    "duration": "3 hours",
+    "price": "$60"
+  },
+  {
+    "id": "event_037",
+    "title": "Acupuncture & Traditional Medicine",
+    "type": "wellness",
+    "description": "Experience traditional healing practices with certified practitioners.",
+    "tags": [
+      "wellness",
+      "acupuncture",
+      "traditional",
+      "healing"
+    ],
+    "experienceAffinity": 0.65,
+    "location": "China",
+    "duration": "2 hours",
+    "price": "$80"
+  },
+  {
+    "id": "event_038",
+    "title": "National Park Exploration",
+    "type": "activity",
+    "description": "Discover pristine natural landscapes with guided tours through national parks.",
+    "tags": [
+      "nature",
+      "national park",
+      "hiking",
+      "wildlife"
+    ],
+    "experienceAffinity": 0.8,
+    "location": "Yellowstone",
+    "duration": "7 hours",
+    "price": "$110"
+  },
+  {
+    "id": "event_039",
+    "title": "Botanical Garden Tour",
+    "type": "activity",
+    "description": "Explore beautiful gardens with rare plants and flowers from around the world.",
+    "tags": [
+      "nature",
+      "botanical",
+      "garden",
+      "plants"
+    ],
+    "experienceAffinity": 0.6,
+    "location": "Singapore",
+    "duration": "3 hours",
+    "price": "$45"
+  },
+  {
+    "id": "event_040",
+    "title": "Stargazing Experience",
+    "type": "activity",
+    "description": "Observe the night sky through powerful telescopes with astronomy experts.",
+    "tags": [
+      "nature",
+      "stargazing",
+      "astronomy",
+      "night"
+    ],
+    "experienceAffinity": 0.7,
+    "location": "Arizona",
+    "duration": "3 hours",
+    "price": "$75"
+  }
+]

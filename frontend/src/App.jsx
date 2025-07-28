@@ -19,12 +19,12 @@ function App() {
     console.log('Sending request with preferences:', preferences);
     
     try {
-      const response = await fetch('/recommend', {
+      const response = await fetch('/testRAG', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(preferences),
+        body: JSON.stringify({ userPrefs: preferences }),
       });
       
       console.log('Response status:', response.status);

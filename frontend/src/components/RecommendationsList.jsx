@@ -3,9 +3,10 @@ import GeneratedActivitiesList from './GeneratedActivitiesList';
 
 function RecommendationsList({ recommendations, onChangeInterests, loading }) {
   const recs = recommendations.recommendations || [];
+  const ragSources = recommendations.ragSources || [];
 
   // Debug logging
-  console.log('RecommendationsList received:', { recommendations, recs });
+  console.log('RecommendationsList received:', { recommendations, recs, ragSources });
 
   if (recs.length === 0) {
     return (
@@ -90,10 +91,15 @@ function RecommendationsList({ recommendations, onChangeInterests, loading }) {
           // Debug logging for each recommendation
           console.log('Rendering recommendation:', rec);
           
+          // Get RAG source info if available
+          const ragSource = rec.originEventId ? 
+            ragSources.find(source => source.id === rec.originEventId) : null;
+          
           return (
             <div key={rec.id} className="recommendation-card">
               <div className="rec-header">
-                <h3>{typeof rec.name === 'string' ? rec.name : 
+                <h3>{typeof rec.title === 'string' ? rec.title : 
+                     typeof rec.name === 'string' ? rec.name : 
                      typeof rec.name === 'object' ? JSON.stringify(rec.name) : 
                      String(rec.name || 'Unknown')}</h3>
                 <div className="rec-rating">⭐ {String(rec.rating || 0)}</div>
@@ -102,6 +108,27 @@ function RecommendationsList({ recommendations, onChangeInterests, loading }) {
               <p className="rec-description">{typeof rec.description === 'string' ? rec.description : 
                                            typeof rec.description === 'object' ? JSON.stringify(rec.description) : 
                                            String(rec.description || 'No description available')}</p>
+              
+              {/* RAG source attribution */}
+              {ragSource && (
+                <div className="rag-source">
+                  <small>Based on: <strong>{ragSource.title}</strong> from RAG</small>
+                </div>
+              )}
+              
+              {/* Timing information for RAG recommendations */}
+              {rec.timing && (
+                <div className="rec-timing">
+                  <strong>⏰ Timing:</strong> {rec.timing}
+                </div>
+              )}
+              
+              {/* Personalized advice for RAG recommendations */}
+              {rec.personalizedAdvice && (
+                <div className="rec-advice">
+                  <strong>💡 Advice:</strong> {rec.personalizedAdvice}
+                </div>
+              )}
               
               <div className="rec-details">
                 <div className="rec-detail">
@@ -157,6 +184,31 @@ function RecommendationsList({ recommendations, onChangeInterests, loading }) {
           );
         })}
       </div>
+
+      {/* RAG Sources Section */}
+      {ragSources.length > 0 && (
+        <div className="rag-sources-section">
+          <h3>📚 RAG Sources</h3>
+          <div className="rag-sources-list">
+            {ragSources.map(source => (
+              <div key={source.id} className="rag-source-item">
+                <span className="source-title">{source.title}</span>
+                <span className="source-type">({source.type})</span>
+                {source.experienceAffinity && (
+                  <span className="source-affinity">• {source.experienceAffinity}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* RAG Information */}
+      {ragSources.length > 0 && (
+        <div className="rag-info">
+          <p>ℹ️ Information is based on real cruise events, retrieved via RAG.</p>
+        </div>
+      )}
 
       <div className="action-buttons">
         <button onClick={onChangeInterests} className="change-interests-btn">

@@ -16,6 +16,11 @@ export interface Recommendation {
   duration: string;
   highlights: string[];
   fallback?: boolean;
+  // RAG-specific fields
+  title?: string;
+  timing?: string;
+  originEventId?: string;
+  personalizedAdvice?: string;
 }
 
 export interface AIInsights {
@@ -49,6 +54,23 @@ export interface EnhancementMetadata {
   timestamp: string;
 }
 
+export interface RAGSource {
+  id: string;
+  title: string;
+  type: string;
+  experienceAffinity?: string;
+  score?: number;
+  tags?: string[];
+}
+
+export interface RAGInsight {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  relevance: string;
+}
+
 export interface RecommendationsResponse {
   recommendations: Recommendation[];
   metadata: {
@@ -60,6 +82,18 @@ export interface RecommendationsResponse {
   aiInsights?: AIInsights;
   enhancementMetadata?: EnhancementMetadata;
   generatedActivities?: GeneratedActivities;
+  // RAG-specific fields
+  ragSources?: RAGSource[];
+  ragInsights?: RAGInsight[];
+  retrievedEvents?: any[];
+  prompt?: {
+    type: string;
+    content: string;
+    estimatedTokens: number;
+    maxTokens: number;
+  };
+  count?: number;
+  minAffinity?: number;
 }
 
 export interface ApiStatus {

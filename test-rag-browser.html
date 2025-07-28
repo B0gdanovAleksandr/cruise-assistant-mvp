@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG System Test - Cruise Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .test-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .interests-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .interest-tag {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .interest-tag:hover {
+            background: #5a6fd8;
+        }
+        
+        .interest-tag.selected {
+            background: #28a745;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+        
+        .results {
+            margin-top: 30px;
+        }
+        
+        .recommendation-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .rec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .rec-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .rec-rating {
+            background: #ffc107;
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        
+        .rec-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .rec-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .rec-detail {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .rec-detail strong {
+            color: #333;
+        }
+        
+        .rec-citation {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #1976d2;
+        }
+        
+        .rec-reasoning {
+            background: #f3e5f5;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #7b1fa2;
+        }
+        
+        .ai-insights {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .ai-insights h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+        
+        .ai-section {
+            margin-bottom: 15px;
+        }
+        
+        .ai-section h4 {
+            color: #388e3c;
+            margin-bottom: 8px;
+        }
+        
+        .ai-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .ai-section li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        .metadata {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚢 Hybrid System Test - Cruise Assistant</h1>
+        
+        <div class="test-form">
+            <h2>🧪 Test Hybrid Recommendations (Qloo + RAG + OpenAI)</h2>
+            
+            <div class="form-group">
+                <label>Interests:</label>
+                <div class="interests-container" id="interestsContainer">
+                    <span class="interest-tag" data-interest="culture">Culture</span>
+                    <span class="interest-tag" data-interest="history">History</span>
+                    <span class="interest-tag" data-interest="wellness">Wellness</span>
+                    <span class="interest-tag" data-interest="spa">Spa</span>
+                    <span class="interest-tag" data-interest="adventure">Adventure</span>
+                    <span class="interest-tag" data-interest="food">Food</span>
+                    <span class="interest-tag" data-interest="wine">Wine</span>
+                    <span class="interest-tag" data-interest="family">Family</span>
+                    <span class="interest-tag" data-interest="entertainment">Entertainment</span>
+                    <span class="interest-tag" data-interest="yoga">Yoga</span>
+                    <span class="interest-tag" data-interest="outdoor">Outdoor</span>
+                    <span class="interest-tag" data-interest="cooking">Cooking</span>
+                </div>
+                <input type="text" id="customInterests" placeholder="Or type custom interests (comma-separated)">
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <select id="location">
+                    <option value="Mediterranean">Mediterranean</option>
+                    <option value="Caribbean">Caribbean</option>
+                    <option value="Europe">Europe</option>
+                    <option value="Asia">Asia</option>
+                    <option value="Tropical">Tropical</option>
+                    <option value="Any">Any Location</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="budget">Budget:</label>
+                <select id="budget">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            
+            <button id="testButton" onclick="testHybrid()">🧪 Test Hybrid System</button>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
+            <h3>🔄 Testing Hybrid System...</h3>
+            <p>Combining Qloo API + RAG + OpenAI for recommendations...</p>
+        </div>
+        
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div id="results" class="results" style="display: none;"></div>
+    </div>
+
+    <script>
+        let selectedInterests = [];
+        
+        // Initialize interest tags
+        document.addEventListener('DOMContentLoaded', function() {
+            const interestTags = document.querySelectorAll('.interest-tag');
+            interestTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    const interest = this.dataset.interest;
+                    if (this.classList.contains('selected')) {
+                        this.classList.remove('selected');
+                        selectedInterests = selectedInterests.filter(i => i !== interest);
+                    } else {
+                        this.classList.add('selected');
+                        selectedInterests.push(interest);
+                    }
+                });
+            });
+        });
+        
+        async function testHybrid() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const results = document.getElementById('results');
+            const testButton = document.getElementById('testButton');
+            const customInterests = document.getElementById('customInterests').value;
+            
+            // Get interests from custom input or selected tags
+            let interests = selectedInterests;
+            if (customInterests.trim()) {
+                interests = customInterests.split(',').map(i => i.trim()).filter(i => i);
+            }
+            
+            if (interests.length === 0) {
+                showError('Please select at least one interest or enter custom interests.');
+                return;
+            }
+            
+            const location = document.getElementById('location').value;
+            const budget = document.getElementById('budget').value;
+            
+            // Show loading
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            results.style.display = 'none';
+            testButton.disabled = true;
+            
+            try {
+                const response = await fetch('http://localhost:3001/hybridRecommend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userPrefs: {
+                            interests: interests,
+                            location: location,
+                            budget: budget
+                        }
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResults(data.recommendations);
+                } else {
+                    showError(data.error || 'Failed to get recommendations');
+                }
+            } catch (err) {
+                showError(`Network error: ${err.message}. Make sure the backend server is running on port 3001.`);
+            } finally {
+                loading.style.display = 'none';
+                testButton.disabled = false;
+            }
+        }
+        
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+        
+        function showResults(recommendations) {
+            const results = document.getElementById('results');
+            
+            let html = `
+                <div class="success">
+                    <h3>✅ RAG Test Successful!</h3>
+                    <p>Found ${recommendations.recommendations.length} recommendations for your preferences.</p>
+                </div>
+            `;
+            
+            // AI Insights
+            if (recommendations.aiInsights) {
+                html += `
+                    <div class="ai-insights">
+                        <h3>🤖 AI Insights</h3>
+                        <p><strong>Summary:</strong> ${recommendations.aiInsights.summary}</p>
+                        
+                        ${recommendations.aiInsights.personalizedAdvice ? `
+                            <div class="ai-section">
+                                <h4>💡 Personalized Advice</h4>
+                                <ul>
+                                    ${recommendations.aiInsights.personalizedAdvice.map(advice => `<li>${advice}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${recommendations.aiInsights.budgetTips ? `
+                            <div class="ai-section">
+                                <h4>💰 Budget Tips</h4>
+                                <ul>
+                                    ${recommendations.aiInsights.budgetTips.map(tip => `<li>${tip}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${recommendations.aiInsights.bestTimes ? `
+                            <div class="ai-section">
+                                <h4>⏰ Best Times</h4>
+                                <ul>
+                                    ${recommendations.aiInsights.bestTimes.map(time => `<li>${time}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            // Recommendations
+            html += '<h2>🎯 Your Personalized Recommendations</h2>';
+            
+            recommendations.recommendations.forEach((rec, index) => {
+                html += `
+                    <div class="recommendation-card">
+                        <div class="rec-header">
+                            <div class="rec-title">${index + 1}. ${rec.title}</div>
+                            <div class="rec-rating">⭐ ${rec.rating}</div>
+                        </div>
+                        
+                        <div class="rec-description">${rec.description}</div>
+                        
+                        <div class="rec-citation">
+                            <strong>📚 Citation:</strong> ${rec.citation}
+                        </div>
+                        
+                        <div class="rec-reasoning">
+                            <strong>💭 Reasoning:</strong> ${rec.reasoning}
+                        </div>
+                        
+                        <div class="rec-details">
+                            <div class="rec-detail">
+                                <strong>📍 Location:</strong> ${rec.location}
+                            </div>
+                            <div class="rec-detail">
+                                <strong>⏱️ Duration:</strong> ${rec.duration}
+                            </div>
+                            <div class="rec-detail">
+                                <strong>💰 Price:</strong> ${rec.price}
+                            </div>
+                            <div class="rec-detail">
+                                <strong>🎯 Score:</strong> ${rec.score.toFixed(3)} (${rec.relevance})
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Metadata
+            if (recommendations.metadata) {
+                html += `
+                    <div class="metadata">
+                        <h4>📊 System Information</h4>
+                        <p><strong>Query:</strong> ${recommendations.query}</p>
+                        <p><strong>Query Type:</strong> ${recommendations.metadata.queryType}</p>
+                        <p><strong>Total Results:</strong> ${recommendations.metadata.totalResults}</p>
+                        <p><strong>Average Score:</strong> ${recommendations.metadata.averageScore.toFixed(3)}</p>
+                        <p><strong>Response Time:</strong> ${recommendations.metadata.responseTime.toFixed(0)}ms</p>
+                        <p><strong>System Version:</strong> ${recommendations.metadata.systemVersion}</p>
+                    </div>
+                `;
+            }
+            
+            results.innerHTML = html;
+            results.style.display = 'block';
+        }
+    </script>
+</body>
+</html> 

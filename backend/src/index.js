@@ -18,8 +18,14 @@ const cors = require('cors');
 const logger = require('./utils/logger');
 const qlooClient = require('./services/qlooClient').instance;
 const llmClient = require('./services/llmClient');
+const entityResolver = require('./services/entityResolver');
 const RecommendationGenerator = require('./services/recommendationGenerator');
 const InsightsAggregator = require('./services/insightsAggregator');
+const EventIndexer = require('./services/eventIndexer');
+const EventRetriever = require('./services/eventRetriever');
+const PromptGenerator = require('./services/promptGenerator');
+const RAGRecommendationService = require('./services/ragRecommendationService');
+const TestRAGEndpoint = require('./testRAGEndpoint');
 const mockData = require('./mock/qlooMock.json');
 
 const app = express();
@@ -31,16 +37,22 @@ app.use(express.json());
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Cruise Assistant API',
-    version: '1.0.0',
+    version: '3.3.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
     endpoints: {
       health: 'GET /health',
-      recommendations: 'POST /recommend',
-      insights: 'POST /test-insights',
       promptInjection: 'POST /test-prompt-injection',
       apiStatus: 'GET /api-status',
-      qlooTest: 'GET /test-qloo'
+      qlooTest: 'GET /test-qloo',
+      eventsIndex: 'POST /events/index',
+      eventsSearch: 'POST /events/search',
+      eventsRetrieve: 'POST /events/retrieve',
+      eventsStatus: 'GET /events/status',
+      promptsGenerate: 'POST /prompts/generate',
+      recommendRAG: 'POST /recommendRAG'
     }
   });
 });
@@ -267,7 +279,7 @@ app.post('/analyze-entities', async (req, res) => {
     logger.info('Entity analysis request received', { interests, location, budget });
     
     // Step 1: Entity Resolution with detailed logging
-    const resolutionResult = await qlooClient.resolveEntities(interests, {
+    const resolutionResult = await entityResolver.resolveEntities(interests, {
       types: ['brand', 'place', 'tag', 'audience'],
       confidenceThreshold: 0.4
     });
@@ -450,6 +462,271 @@ app.post('/recommend', async (req, res) => {
     }
   }
 });
+
+// RAG Endpoints for Event Indexing and Search
+app.post('/events/index', async (req, res) => {
+  try {
+    logger.info('Event indexing requested');
+    
+    const eventIndexer = new EventIndexer();
+    const filePath = req.body.filePath || null; // Optional custom file path
+    
+    const result = await eventIndexer.loadAndIndex(filePath);
+    
+    if (result.status === 'OK') {
+      res.json({
+        success: true,
+        message: result.message,
+        loadedCount: result.loadedCount,
+        indexedCount: result.indexedCount,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error,
+        message: result.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    logger.error('Error indexing events:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during event indexing',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.post('/events/search', async (req, res) => {
+  try {
+    logger.info('Event search requested');
+    
+    const { query, topK = 5 } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        error: 'Query parameter is required',
+        timestamp: new Date().toISOString()
+    });
+    }
+    
+    const eventIndexer = new EventIndexer();
+    const results = await eventIndexer.searchEvents(query, topK);
+    
+    res.json({
+      success: true,
+      query: query,
+      results: results,
+      count: results.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error searching events:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during event search',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// New Retrieval Pipeline Endpoint
+app.post('/events/retrieve', async (req, res) => {
+  try {
+    logger.info('Event retrieval requested');
+    
+    const { userPrefs, topK = 5, minAffinity = 0.4 } = req.body;
+    
+    if (!userPrefs || !userPrefs.interests || !userPrefs.location) {
+      return res.status(400).json({
+        success: false,
+        error: 'User preferences must include interests and location',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    const eventRetriever = new EventRetriever();
+    const results = await eventRetriever.retrieveRelevantEventsWithMinAffinity(userPrefs, minAffinity, topK);
+    
+    res.json({
+      success: true,
+      userPrefs: userPrefs,
+      results: results,
+      count: results.length,
+      minAffinity: minAffinity,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error retrieving events:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during event retrieval',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.get('/events/status', async (req, res) => {
+  try {
+    logger.info('Event indexing status requested');
+    
+    const eventIndexer = new EventIndexer();
+    const events = await eventIndexer.loadEvents();
+    
+    res.json({
+      success: true,
+      eventsCount: events.length,
+      status: 'indexed',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error checking event status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error checking event status',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// New Prompt Generation Endpoint
+app.post('/prompts/generate', async (req, res) => {
+  try {
+    logger.info('Prompt generation requested');
+
+    const { userPrefs, topK = 5, minAffinity = 0.4, promptType = 'standard' } = req.body;
+
+    if (!userPrefs || !userPrefs.interests) {
+      return res.status(400).json({
+        success: false,
+        error: 'User preferences must include interests',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // First retrieve relevant events
+    const eventRetriever = new EventRetriever();
+    const retrievedEvents = await eventRetriever.retrieveRelevantEventsWithMinAffinity(userPrefs, minAffinity, topK);
+
+    if (retrievedEvents.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'No relevant events found for the given preferences',
+        userPrefs: userPrefs,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Generate prompt based on retrieved events
+    const promptGenerator = new PromptGenerator();
+    let generatedPrompt;
+
+    switch (promptType) {
+      case 'compact':
+        generatedPrompt = promptGenerator.generateCompactPrompt(retrievedEvents, userPrefs);
+        break;
+      case 'detailed':
+        generatedPrompt = promptGenerator.generateDetailedPrompt(retrievedEvents, userPrefs, {
+          includeTags: true,
+          includeAffinity: true
+        });
+        break;
+      case 'standard':
+      default:
+        generatedPrompt = promptGenerator.generateRecommendationPrompt(retrievedEvents, userPrefs);
+        break;
+    }
+
+    const estimatedTokens = promptGenerator.estimateTokens(generatedPrompt);
+
+    res.json({
+      success: true,
+      userPrefs: userPrefs,
+      retrievedEvents: retrievedEvents.map(event => ({
+        id: event.id,
+        title: event.title,
+        type: event.type,
+        score: event.score,
+        experienceAffinity: event.experienceAffinity
+      })),
+      prompt: {
+        type: promptType,
+        content: generatedPrompt,
+        estimatedTokens: estimatedTokens,
+        maxTokens: promptGenerator.maxTokens
+      },
+      count: retrievedEvents.length,
+      minAffinity: minAffinity,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    logger.error('Error generating prompt:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during prompt generation',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// RAG Recommendation Endpoint
+app.post('/recommendRAG', async (req, res) => {
+  try {
+    logger.info('RAG recommendation requested');
+
+    const { userPrefs, options = {} } = req.body;
+
+    if (!userPrefs || !userPrefs.interests) {
+      return res.status(400).json({
+        success: false,
+        error: 'User preferences must include interests',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+            const ragService = new RAGRecommendationService();
+        const response = await ragService.generateRecommendations(userPrefs, options);
+
+        // Check if the service returned an error response
+        if (!response.success) {
+          return res.status(200).json(response);
+        }
+
+        // Validate response structure for successful responses
+        if (!ragService.validateResponse(response)) {
+          logger.warn('Response validation failed, returning error');
+          return res.status(500).json({
+            success: false,
+            error: 'Invalid response structure generated',
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        res.json(response);
+
+  } catch (error) {
+    logger.error('Error in RAG recommendation endpoint:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during RAG recommendation generation',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Initialize test RAG endpoint
+const testRAGEndpoint = new TestRAGEndpoint();
+testRAGEndpoint.createTestEndpoint(app);
 
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);

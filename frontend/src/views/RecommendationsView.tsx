@@ -62,7 +62,7 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
       </main>
 
       <footer className='App-footer'>
-        <p>Version 3.1 - Docker Ready</p>
+        <p>Version 3.3.0 - Comprehensive Testing & Enhanced Database</p>
       </footer>
     </div>
   );

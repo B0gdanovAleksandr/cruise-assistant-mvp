@@ -1,0 +1,197 @@
+[
+  {
+    "id": "user_001",
+    "interests": [
+      "culture",
+      "history",
+      "art"
+    ],
+    "location": "Mediterranean",
+    "budget": "medium",
+    "groupSize": 2,
+    "preferredDuration": "3-5 hours",
+    "accessibility": false
+  },
+  {
+    "id": "user_002",
+    "interests": [
+      "culture",
+      "mythology",
+      "architecture"
+    ],
+    "location": "Europe",
+    "budget": "high",
+    "groupSize": 1,
+    "preferredDuration": "2-4 hours",
+    "accessibility": true
+  },
+  {
+    "id": "user_003",
+    "interests": [
+      "wellness",
+      "spa",
+      "relaxation"
+    ],
+    "location": "Caribbean",
+    "budget": "high",
+    "groupSize": 2,
+    "preferredDuration": "2-3 hours",
+    "accessibility": false
+  },
+  {
+    "id": "user_004",
+    "interests": [
+      "wellness",
+      "yoga",
+      "meditation"
+    ],
+    "location": "Asia",
+    "budget": "medium",
+    "groupSize": 1,
+    "preferredDuration": "1-2 hours",
+    "accessibility": true
+  },
+  {
+    "id": "user_005",
+    "interests": [
+      "adventure",
+      "outdoor",
+      "thrilling"
+    ],
+    "location": "Any",
+    "budget": "medium",
+    "groupSize": 4,
+    "preferredDuration": "4-6 hours",
+    "accessibility": false
+  },
+  {
+    "id": "user_006",
+    "interests": [
+      "adventure",
+      "water sports",
+      "marine"
+    ],
+    "location": "Tropical",
+    "budget": "high",
+    "groupSize": 2,
+    "preferredDuration": "3-4 hours",
+    "accessibility": false
+  },
+  {
+    "id": "user_007",
+    "interests": [
+      "food",
+      "wine",
+      "cooking"
+    ],
+    "location": "Europe",
+    "budget": "high",
+    "groupSize": 2,
+    "preferredDuration": "2-4 hours",
+    "accessibility": false
+  },
+  {
+    "id": "user_008",
+    "interests": [
+      "food",
+      "local",
+      "authentic"
+    ],
+    "location": "Asia",
+    "budget": "medium",
+    "groupSize": 3,
+    "preferredDuration": "2-3 hours",
+    "accessibility": true
+  },
+  {
+    "id": "user_009",
+    "interests": [
+      "family",
+      "kids",
+      "entertainment"
+    ],
+    "location": "Any",
+    "budget": "medium",
+    "groupSize": 4,
+    "preferredDuration": "4-8 hours",
+    "accessibility": true
+  },
+  {
+    "id": "user_010",
+    "interests": [
+      "family",
+      "education",
+      "fun"
+    ],
+    "location": "Any",
+    "budget": "low",
+    "groupSize": 5,
+    "preferredDuration": "2-4 hours",
+    "accessibility": true
+  },
+  {
+    "id": "user_011",
+    "interests": [
+      "entertainment",
+      "music",
+      "nightlife"
+    ],
+    "location": "Urban",
+    "budget": "medium",
+    "groupSize": 2,
+    "preferredDuration": "2-4 hours",
+    "accessibility": false
+  },
+  {
+    "id": "user_012",
+    "interests": [
+      "entertainment",
+      "theater",
+      "culture"
+    ],
+    "location": "Major Cities",
+    "budget": "high",
+    "groupSize": 2,
+    "preferredDuration": "3-4 hours",
+    "accessibility": true
+  },
+  {
+    "id": "user_013",
+    "interests": [
+      "culture",
+      "wellness",
+      "food"
+    ],
+    "location": "Mediterranean",
+    "budget": "high",
+    "groupSize": 2,
+    "preferredDuration": "3-5 hours",
+    "accessibility": false
+  },
+  {
+    "id": "user_014",
+    "interests": [
+      "adventure",
+      "family",
+      "entertainment"
+    ],
+    "location": "Tropical",
+    "budget": "medium",
+    "groupSize": 4,
+    "preferredDuration": "4-6 hours",
+    "accessibility": true
+  },
+  {
+    "id": "user_015",
+    "interests": [
+      "culture",
+      "food",
+      "entertainment"
+    ],
+    "location": "Europe",
+    "budget": "medium",
+    "groupSize": 3,
+    "preferredDuration": "2-4 hours",
+    "accessibility": false
+  }
+]
