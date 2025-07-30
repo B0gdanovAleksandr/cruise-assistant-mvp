@@ -35,6 +35,7 @@ COPY nginx.render.conf /etc/nginx/nginx.conf
 # Create startup script
 RUN echo '#!/bin/sh' > /start.sh && \
     echo 'cd /app/backend && npm start &' >> /start.sh && \
+    echo 'sleep 5' >> /start.sh && \
     echo 'nginx -g "daemon off;"' >> /start.sh && \
     chmod +x /start.sh
 
