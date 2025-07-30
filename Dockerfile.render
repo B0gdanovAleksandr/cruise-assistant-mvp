@@ -1,4 +1,5 @@
 # Multi-stage build for Render.com
+# Updated: 2025-07-30 - Fixed nginx startup timing
 FROM node:18-alpine AS backend-builder
 
 WORKDIR /app/backend
